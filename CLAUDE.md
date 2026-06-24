@@ -23,14 +23,16 @@ The frontend and backend are fully decoupled. The frontend calls the backend via
 
 See `.claude/skills/django-architecture.md` for the full architecture rules. Always follow that pattern when creating or modifying backend code.
 
-See `.claude/skills/django-drf-best-practices.md` for Django and DRF best practices (models, serializers, views, permissions, testing, performance).
+See `.claude/skills/django-best-practices.md` for Django best practices (models, QuerySets, migrations, settings, testing, logging).
+
+See `.claude/skills/drf-best-practices.md` for DRF best practices (serializers, views, permissions, authentication, pagination, throttling, testing).
 
 ## Backend
 
 **Setup:**
 ```bash
 cd backend
-source venv/bin/activate
+source .venv/bin/activate
 ```
 
 **Run dev server:**
@@ -45,9 +47,11 @@ python manage.py migrate
 python manage.py createsuperuser
 python manage.py test                    # run all tests
 python manage.py test <app>.tests.<TestClass>  # run a single test
+ruff check .                             # lint
+ruff format .                            # format
 ```
 
-**Environment:** Uses `python-decouple` — copy `.env.example` to `.env` and fill in values. Required keys: `SECRET_KEY`, `DEBUG`, `ALLOWED_HOSTS`.
+**Environment:** Uses `python-decouple` — copy `.env.example` to `.env` and fill in values. Required keys: `SECRET_KEY`, `ALLOWED_HOSTS`, `POSTGRES_*`.
 
 **Adding a new Django app:**
 ```bash

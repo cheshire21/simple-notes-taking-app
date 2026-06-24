@@ -5,6 +5,39 @@ Focus: how to write correct, secure, and maintainable Django code.
 
 ---
 
+## Naming Conventions
+
+Python uses different conventions depending on what is being named. `camelCase` is never used in Python.
+
+| What | Convention | Example |
+|------|-----------|---------|
+| Functions | `snake_case` | `note_create`, `note_list` |
+| Variables and arguments | `snake_case` | `user_id`, `category_name` |
+| Classes | `PascalCase` | `NoteSerializer`, `UserFactory` |
+| Constants | `UPPER_SNAKE_CASE` | `MAX_PAGE_SIZE` |
+| Files and modules | `snake_case` | `views.py`, `note_serializer.py` |
+| Django apps | `snake_case` | `notes`, `users` |
+| URL names | `snake_case` with hyphens for segments | `note-list`, `note-detail` |
+
+```python
+# correct
+MAX_TITLE_LENGTH = 255
+
+class NoteCreateInputSerializer(serializers.Serializer):
+    ...
+
+def note_create(*, user, title):
+    ...
+
+# wrong — camelCase is JavaScript, not Python
+def createNote(userId, noteTitle):   # ← never
+    ...
+```
+
+Enforced by Ruff rule `N` (pep8-naming). Exception: migration files use `Note = apps.get_model(...)` which looks like a constant — this is intentional Django pattern, not a violation.
+
+---
+
 ## Models
 
 ### Always Define `__str__`
@@ -235,19 +268,28 @@ core/settings/
 from decouple import config, Csv
 
 SECRET_KEY = config("SECRET_KEY")
-DEBUG = config("DEBUG", default=False, cast=bool)
-ALLOWED_HOSTS = config("ALLOWED_HOSTS", cast=Csv())
+ALLOWED_HOSTS = config("ALLOWED_HOSTS", default="localhost,127.0.0.1", cast=Csv())
 
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": config("DB_NAME"),
-        "USER": config("DB_USER"),
-        "PASSWORD": config("DB_PASSWORD"),
-        "HOST": config("DB_HOST", default="localhost"),
-        "PORT": config("DB_PORT", default="5432"),
+        "NAME": config("POSTGRES_DB"),
+        "USER": config("POSTGRES_USER"),
+        "PASSWORD": config("POSTGRES_PASSWORD"),
+        "HOST": config("POSTGRES_HOST", default="localhost"),
+        "PORT": config("POSTGRES_PORT", default="5432"),
     }
 }
+```
+
+`DEBUG` is not read from the environment — it is hardcoded per environment file:
+
+```python
+# core/settings/dev.py
+DEBUG = True
+
+# core/settings/prod.py
+DEBUG = False
 ```
 
 ### Security Settings for Production
@@ -397,6 +439,68 @@ class NoteFactory(factory.django.DjangoModelFactory):
 | **Selector** | Returns correct rows; filters work; user scoping is enforced |
 | **API (DRF)** | See `drf-best-practices.md` |
 
+### Test Isolation
+
+Each test must be fully independent — no test should rely on state created by another, and no test should leave state that affects the next one.
+
+Django's `TestCase` handles DB isolation automatically by wrapping each test method in a transaction and rolling it back after. You never need to clean up DB objects manually.
+
+**`setUp` vs `setUpTestData`:**
+- `setUp` — runs before **every** test method; use for objects that get mutated or deleted in tests
+- `setUpTestData` — runs once per class, wrapped in a transaction; use for read-only shared objects — significantly faster
+
+```python
+class NoteServiceTests(TestCase):
+    def setUp(self):
+        # recreated fresh before every test — safe for mutable objects
+        self.user = UserFactory()
+        self.other_user = UserFactory()
+
+class NoteReadTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        # created once for the whole class — only for objects no test will mutate
+        cls.user = UserFactory()
+        cls.notes = NoteFactory.create_batch(5, user=cls.user)
+
+    def test_list_returns_all(self):
+        result = note_list(user=self.user)
+        self.assertEqual(result.count(), 5)
+```
+
+**Rules:**
+- Never use class-level mutable variables — they persist across all tests in the class
+- Never assert on counts (`Note.objects.count()`) without controlling all the data in that test
+- Never rely on test execution order — each test must set up everything it needs
+- If a test mutates a `setUpTestData` object, Django automatically wraps that test in a savepoint and rolls it back — but avoid it to keep tests readable
+
+### Mock External Dependencies, Never the ORM
+
+Mock anything that crosses a network boundary or has real-world side effects. Never mock the database — the ORM is the foundation of the service and selector layers and must be tested against a real DB.
+
+| Mock ✓ | Never mock ✗ |
+|--------|-------------|
+| Email (`send_mail`, SendGrid, SES) | `Model.save()` |
+| External HTTP APIs (Stripe, Twilio) | `Model.objects.filter()` |
+| Celery tasks | `full_clean()` |
+| Cloud storage (S3, GCS) | Your own services and selectors |
+| Push notifications (Firebase) | Any ORM query |
+
+```python
+# mock the external side effect — not the DB
+def test_create_note_sends_notification(self):
+    with patch("notes.services.send_mail") as mock_email:
+        note_create(user=self.user, title="Test")
+        mock_email.assert_called_once()
+
+# never mock the ORM — test against the real DB
+def test_create_note_saves_to_db(self):
+    note = note_create(user=self.user, title="Test")
+    self.assertEqual(Note.objects.count(), 1)  # real DB query
+```
+
+> If it would cost money, send a message, or require internet access in production — mock it in tests.
+
 ### Test the Unhappy Paths
 Happy-path tests give you confidence. Unhappy-path tests give you security.
 
@@ -428,15 +532,18 @@ class NoteServiceTests(TestCase):
 Configure structured logging in production — never rely on `print()`:
 
 ```python
-# core/settings/prod.py
+# core/settings/base.py
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
     "formatters": {
-        "json": {"()": "pythonjsonlogger.jsonlogger.JsonFormatter"},
+        "verbose": {
+            "format": "{levelname} {asctime} {module} {message}",
+            "style": "{",
+        },
     },
     "handlers": {
-        "console": {"class": "logging.StreamHandler", "formatter": "json"},
+        "console": {"class": "logging.StreamHandler", "formatter": "verbose"},
     },
     "root": {"handlers": ["console"], "level": "INFO"},
     "loggers": {
@@ -458,6 +565,26 @@ def note_create(*, user, title):
     logger.info("Note created", extra={"note_id": note.id, "user_id": user.id})
     return note
 ```
+
+---
+
+## Code Style
+
+### Collapse Nested `if` When Conditions Belong Together
+Two nested `if` statements checking related conditions should be merged into one:
+
+```python
+# bad — two separate guards for one logical condition
+if user.is_active:
+    if user.is_verified:
+        send_welcome_email(user)
+
+# good — one condition, one indentation level
+if user.is_active and user.is_verified:
+    send_welcome_email(user)
+```
+
+Keep them separate only when the conditions are truly independent and each branch needs its own logic.
 
 ---
 

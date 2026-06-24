@@ -206,8 +206,6 @@ Use `djangorestframework-simplejwt`:
 
 ```python
 # core/settings/base.py
-INSTALLED_APPS = [..., "rest_framework_simplejwt"]
-
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "rest_framework_simplejwt.authentication.JWTAuthentication",
@@ -218,8 +216,11 @@ SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
     "ROTATE_REFRESH_TOKENS": True,
+    "AUTH_HEADER_TYPES": ("Bearer",),
 }
 ```
+
+`rest_framework_simplejwt` does not need to be in `INSTALLED_APPS` unless you use the token blacklist feature.
 
 - Short-lived access tokens (15 min), longer-lived refresh tokens (7 days)
 - Rotate refresh tokens on each use (`ROTATE_REFRESH_TOKENS = True`)
@@ -279,17 +280,15 @@ class NoteFilter(django_filters.FilterSet):
 ```
 
 ```python
-class NoteListView(generics.ListAPIView):
+class NoteListView(APIView):
     permission_classes = [IsAuthenticated]
-    serializer_class = NoteOutputSerializer
-    filterset_class = NoteFilter
-    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    search_fields = ["title"]                    # ?search=
-    ordering_fields = ["created_at", "title"]   # ?ordering=-created_at
-    ordering = ["-created_at"]                  # default ordering
 
-    def get_queryset(self):
-        return note_list(user=self.request.user)
+    def get(self, request):
+        notes = note_list(
+            user=request.user,
+            category_id=request.query_params.get("category_id"),
+        )
+        return Response(NoteOutputSerializer(notes, many=True).data)
 ```
 
 ---
@@ -463,7 +462,7 @@ For every endpoint, cover all four categories:
 
 ## Performance
 
-- Apply `select_related` / `prefetch_related` in selectors (`get_queryset`) — never in serializers
+- Apply `select_related` / `prefetch_related` in **selectors** — never in views or serializers
 - Use `only()` / `defer()` on endpoints that return large models with many unused fields
 - Cache expensive aggregations — don't recompute per request
 

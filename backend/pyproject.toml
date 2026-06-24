@@ -1,0 +1,36 @@
+[tool.ruff]
+line-length = 119
+target-version = "py39"
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes
+    "I",    # isort
+    "B",    # flake8-bugbear
+    "UP",   # pyupgrade
+    "DJ",   # flake8-django
+    "N",    # pep8-naming
+    "S",    # bandit (security)
+    "RUF",  # ruff-specific rules
+    "T20",  # no print statements
+    "SIM",  # simplifiable code
+]
+ignore = [
+    "E501",   # line too long — handled by formatter
+    "S101",   # assert in tests
+    "S105",   # hardcoded password string — triggers on test factories
+    "S106",   # hardcoded password in function call — triggers on test factories
+    "SIM105", # use contextlib.suppress — try/except is more readable
+    "SIM108", # use ternary operator — if/else is more readable for complex expressions
+]
+
+[tool.ruff.lint.per-file-ignores]
+"*/migrations/*" = ["E501", "F401", "N806"]
+"*/settings/*" = ["F403", "F405"]
+"*/tests/*" = ["S101", "S105", "S106"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
