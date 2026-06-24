@@ -21,7 +21,8 @@ Each app must follow this structure:
 └── tests/
     ├── test_models.py
     ├── test_services.py
-    └── test_selectors.py
+    ├── test_selectors.py
+    └── test_views.py
 ```
 
 When `services.py` or `selectors.py` grow too large, split into a folder:
@@ -82,7 +83,7 @@ def note_update(*, note: Note, title: str) -> Note:
 
 def note_delete(*, note: Note, user: User) -> None:
     if note.user_id != user.id:
-        raise PermissionError("Not your note")
+        raise PermissionDenied("You cannot delete this note.")
     note.delete()
 ```
 
@@ -173,7 +174,7 @@ Shared utilities go in `core/` or a `shared/` app that any feature can import fr
 
 There is no fixed list of required apps. Each app is added as the product grows. When adding a new app:
 
-- Run `python manage.py startapp <appname>` and register it in `core/settings.py` `INSTALLED_APPS`
+- Run `python manage.py startapp <appname>` and register it in `core/settings/base.py` `INSTALLED_APPS`
 - Wire its URLs in `core/urls.py`
 - Follow the internal structure: `models.py`, `services.py`, `selectors.py`, `serializers.py`, `views.py`, `urls.py`, `tests/`
 - An app may import from `core/` or another app's **models only** — never from another app's services, selectors, or views

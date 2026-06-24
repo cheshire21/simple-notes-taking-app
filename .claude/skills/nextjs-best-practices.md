@@ -196,31 +196,22 @@ export async function generateStaticParams() {
 ## API Authentication & Silent Token Refresh
 
 ### Token Storage
-- **Access token** — stored in Zustand (memory only). Invisible to DevTools, XSS cannot steal it. Lost on page refresh — silent refresh restores it automatically.
-- **Refresh token** — stored in `localStorage`. Persists across refreshes. Acceptable trade-off since it's useless without the backend secret.
+Both tokens are stored in `localStorage` — simple, persists across page refreshes.
 
-```typescript
-// store/auth.ts
-const useAuthStore = create<AuthState>((set) => ({
-  accessToken: null,
-  setAccessToken: (token) => set({ accessToken: token }),
-  setRefreshToken: (token) => localStorage.setItem("refresh_token", token),
-  clearAuth: () => {
-    localStorage.removeItem("refresh_token");
-    set({ accessToken: null });
-  },
-}));
-```
+| Token | Key | Lifetime |
+|-------|-----|---------|
+| Access token | `access_token` | 15 minutes |
+| Refresh token | `refresh_token` | 7 days |
 
 ### Axios Interceptors
-All API calls go through the axios instance in `lib/api.ts`. Access the Zustand store outside React using `useAuthStore.getState()`.
+All API calls go through the axios instance in `lib/api.ts`.
 
-**Request interceptor** — attaches the access token from the Zustand store:
+**Request interceptor** — attaches the access token to every request:
 ```typescript
 api.interceptors.request.use((config) => {
-  const { accessToken } = useAuthStore.getState();
-  if (!accessToken) return config;
-  config.headers.set("Authorization", `Bearer ${accessToken}`);
+  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
+  if (!token) return config;
+  config.headers.set("Authorization", `Bearer ${token}`);
   return config;
 });
 ```
@@ -234,16 +225,17 @@ api.interceptors.response.use(
   async (error) => {
     const original = error.config;
 
-    if (error.response?.status === 401 && !original._retry) {
-      original._retry = true;
+    if (error.response?.status === 401 && !original.retried) {
+      original.retried = true;
       try {
         const refresh = localStorage.getItem("refresh_token");
         const { data } = await axios.post("/api/auth/token/refresh/", { refresh });
-        useAuthStore.getState().setAccessToken(data.access);
-        original.headers.Authorization = `Bearer ${data.access}`;
-        return api(original);
+        localStorage.setItem("access_token", data.access);
+        const retryConfig = { ...original, headers: { Authorization: `Bearer ${data.access}` } };
+        return await api(retryConfig);
       } catch {
-        useAuthStore.getState().clearAuth();
+        localStorage.removeItem("access_token");
+        localStorage.removeItem("refresh_token");
         window.location.href = "/login";
       }
     }
@@ -253,10 +245,9 @@ api.interceptors.response.use(
 ```
 
 **Rules:**
-- Use `_retry` flag to prevent infinite retry loops — a failed refresh must not trigger another refresh
+- Use a `retried` flag on the config to prevent infinite retry loops — a failed refresh must not trigger another refresh
 - Use plain `axios.post` (not `api`) for the refresh call — using `api` would loop back into the interceptor
-- On refresh failure: call `clearAuth()` to wipe both tokens and redirect to login
-- Access the store outside React with `useAuthStore.getState()` — never call the hook outside a component
+- On refresh failure: clear both tokens from `localStorage` and redirect to login
 
 ---
 

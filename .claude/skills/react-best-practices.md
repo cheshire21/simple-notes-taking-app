@@ -76,13 +76,13 @@ type Action =
   | { type: "fetch_success"; payload: Note[] }
   | { type: "fetch_error"; payload: string };
 
-function reducer(state: State, action: Action): State {
+const reducer = (state: State, action: Action): State => {
   switch (action.type) {
-    case "fetch_start":  return { loading: true, data: null, error: null };
+    case "fetch_start":   return { loading: true, data: null, error: null };
     case "fetch_success": return { loading: false, data: action.payload, error: null };
-    case "fetch_error":  return { loading: false, data: null, error: action.payload };
+    case "fetch_error":   return { loading: false, data: null, error: action.payload };
   }
-}
+};
 ```
 
 - Never mutate state directly — always return a new object or array
@@ -138,21 +138,20 @@ useEffect(() => {
 
 ```tsx
 // features/notes/hooks/useNotes.ts
-export function useNotes(categoryId?: number) {
-  return useQuery({
+export const useNotes = (categoryId?: number) =>
+  useQuery({
     queryKey: ["notes", categoryId],
     queryFn: () => getNotes(categoryId),
   });
-}
 
 // features/notes/hooks/useCreateNote.ts
-export function useCreateNote() {
+export const useCreateNote = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: createNote,
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["notes"] }),
   });
-}
+};
 ```
 
 ---
@@ -200,18 +199,18 @@ Do not over-optimize. Profile before you `memo`.
 ```tsx
 const AuthContext = createContext<AuthContextValue | null>(null);
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
+export const AuthProvider = ({ children }: { children: React.ReactNode }): JSX.Element => {
   const [user, setUser] = useState<User | null>(null);
   const logout = useCallback(() => setUser(null), []);
   const value = useMemo(() => ({ user, logout }), [user, logout]);
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-}
+};
 
-export function useAuth() {
+export const useAuth = (): AuthContextValue => {
   const ctx = useContext(AuthContext);
   if (!ctx) throw new Error("useAuth must be used inside AuthProvider");
   return ctx;
-}
+};
 ```
 
 ---

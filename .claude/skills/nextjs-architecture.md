@@ -64,11 +64,11 @@ features/
 
 ```tsx
 // app/(dashboard)/notes/page.tsx
-import { NoteList } from '@/features/notes/components/NoteList';
+import { NoteList } from "@/features/notes/components/NoteList";
 
-export default function NotesPage() {
-  return <NoteList />;
-}
+const NotesPage = (): JSX.Element => <NoteList />;
+
+export default NotesPage;
 ```
 
 ---
@@ -80,39 +80,38 @@ export default function NotesPage() {
 
 ```tsx
 // features/notes/components/NoteCard.tsx
-import { Note } from '../types';
+import { Note } from "../types";
 
 interface NoteCardProps {
   note: Note;
   onDelete: (id: number) => void;
 }
 
-export function NoteCard({ note, onDelete }: NoteCardProps) { ... }
+export const NoteCard = ({ note, onDelete }: NoteCardProps): JSX.Element => { ... };
 ```
 
 ```ts
 // features/notes/hooks/useNotes.ts
-import { useQuery } from '@tanstack/react-query';
-import { getNotes } from '../api';
+import { useQuery } from "@tanstack/react-query";
+import { getNotes } from "../api";
 
-export function useNotes(categoryId?: number) {
-  return useQuery({
-    queryKey: ['notes', categoryId],
+export const useNotes = (categoryId?: number) =>
+  useQuery({
+    queryKey: ["notes", categoryId],
     queryFn: () => getNotes(categoryId),
   });
-}
 ```
 
 ```ts
 // features/notes/api.ts
-import { api } from '@/lib/api';
-import { Note, NotePayload } from './types';
+import api from "@/lib/api";
+import { Note, NotePayload } from "./types";
 
 export const getNotes = (categoryId?: number) =>
-  api.get<Note[]>('/notes/', { params: { category_id: categoryId } });
+  api.get<Note[]>("/notes/", { params: { category_id: categoryId } });
 
 export const createNote = (payload: NotePayload) =>
-  api.post<Note>('/notes/', payload);
+  api.post<Note>("/notes/", payload);
 
 export const deleteNote = (id: number) =>
   api.delete(`/notes/${id}/`);
@@ -128,11 +127,11 @@ export const deleteNote = (id: number) =>
 ```tsx
 // components/ui/Button.tsx
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'danger';
+  variant?: "primary" | "secondary" | "danger";
   loading?: boolean;
 }
 
-export function Button({ variant = 'primary', loading, children, ...props }: ButtonProps) { ... }
+export const Button = ({ variant = "primary", loading, children, ...props }: ButtonProps): JSX.Element => { ... };
 ```
 
 ---
@@ -142,19 +141,8 @@ export function Button({ variant = 'primary', loading, children, ...props }: But
 - Axios instance, React Query client, etc.
 
 ```ts
-// lib/api.ts
-import axios from 'axios';
-
-export const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL,
-  headers: { 'Content-Type': 'application/json' },
-});
-
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
-  if (token) config.headers.Authorization = `Bearer ${token}`;
-  return config;
-});
+// lib/api.ts — axios instance with auth interceptors (tokens in localStorage)
+// lib/query-client.ts — React Query client setup
 ```
 
 ---

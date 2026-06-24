@@ -1,7 +1,5 @@
 import axios, { type AxiosRequestConfig } from "axios";
 
-import useAuthStore from "@/store/auth";
-
 interface RetryableRequest extends AxiosRequestConfig {
   retried?: boolean;
 }
@@ -12,9 +10,9 @@ const api = axios.create({
 });
 
 api.interceptors.request.use((config) => {
-  const { accessToken } = useAuthStore.getState();
-  if (!accessToken) return config;
-  config.headers.set("Authorization", `Bearer ${accessToken}`);
+  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
+  if (!token) return config;
+  config.headers.set("Authorization", `Bearer ${token}`);
   return config;
 });
 
@@ -31,11 +29,12 @@ api.interceptors.response.use(
           `${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000"}/api/auth/token/refresh/`,
           { refresh },
         );
-        useAuthStore.getState().setAccessToken(data.access);
+        localStorage.setItem("access_token", data.access);
         const retryConfig = { ...original, headers: { Authorization: `Bearer ${data.access}` } };
         return await api(retryConfig);
       } catch {
-        useAuthStore.getState().clearAuth();
+        localStorage.removeItem("access_token");
+        localStorage.removeItem("refresh_token");
         window.location.href = "/login";
       }
     }
