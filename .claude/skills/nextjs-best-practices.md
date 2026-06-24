@@ -20,20 +20,22 @@ The most important decision in Next.js App Router: **default to Server Component
 
 ```tsx
 // Server Component — no directive needed, fetches directly
-export default async function NotesPage() {
+const NotesPage = async (): Promise<JSX.Element> => {
   const notes = await noteList({ userId: getCurrentUserId() });
-  return <NoteList notes={notes} />;  // NoteList can be a Client Component
-}
+  return <NoteList notes={notes} />;
+};
+
+export default NotesPage;
 ```
 
 ```tsx
 // Client Component — only what needs interactivity
 "use client";
 
-export function NoteList({ notes }: { notes: Note[] }) {
+export const NoteList = ({ notes }: { notes: Note[] }): JSX.Element => {
   const [selected, setSelected] = useState<number | null>(null);
   ...
-}
+};
 ```
 
 ---
@@ -188,6 +190,73 @@ export async function generateStaticParams() {
   return notes.map((note) => ({ id: String(note.id) }));
 }
 ```
+
+---
+
+## API Authentication & Silent Token Refresh
+
+### Token Storage
+- **Access token** — stored in Zustand (memory only). Invisible to DevTools, XSS cannot steal it. Lost on page refresh — silent refresh restores it automatically.
+- **Refresh token** — stored in `localStorage`. Persists across refreshes. Acceptable trade-off since it's useless without the backend secret.
+
+```typescript
+// store/auth.ts
+const useAuthStore = create<AuthState>((set) => ({
+  accessToken: null,
+  setAccessToken: (token) => set({ accessToken: token }),
+  setRefreshToken: (token) => localStorage.setItem("refresh_token", token),
+  clearAuth: () => {
+    localStorage.removeItem("refresh_token");
+    set({ accessToken: null });
+  },
+}));
+```
+
+### Axios Interceptors
+All API calls go through the axios instance in `lib/api.ts`. Access the Zustand store outside React using `useAuthStore.getState()`.
+
+**Request interceptor** — attaches the access token from the Zustand store:
+```typescript
+api.interceptors.request.use((config) => {
+  const { accessToken } = useAuthStore.getState();
+  if (!accessToken) return config;
+  config.headers.set("Authorization", `Bearer ${accessToken}`);
+  return config;
+});
+```
+
+**Response interceptor — silent token refresh:**
+When the access token expires the API returns `401`. Instead of logging the user out immediately, the interceptor automatically requests a new access token using the refresh token and retries the original request — transparently, without the user noticing.
+
+```typescript
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const original = error.config;
+
+    if (error.response?.status === 401 && !original._retry) {
+      original._retry = true;
+      try {
+        const refresh = localStorage.getItem("refresh_token");
+        const { data } = await axios.post("/api/auth/token/refresh/", { refresh });
+        useAuthStore.getState().setAccessToken(data.access);
+        original.headers.Authorization = `Bearer ${data.access}`;
+        return api(original);
+      } catch {
+        useAuthStore.getState().clearAuth();
+        window.location.href = "/login";
+      }
+    }
+    return Promise.reject(error);
+  },
+);
+```
+
+**Rules:**
+- Use `_retry` flag to prevent infinite retry loops — a failed refresh must not trigger another refresh
+- Use plain `axios.post` (not `api`) for the refresh call — using `api` would loop back into the interceptor
+- On refresh failure: call `clearAuth()` to wipe both tokens and redirect to login
+- Access the store outside React with `useAuthStore.getState()` — never call the hook outside a component
 
 ---
 

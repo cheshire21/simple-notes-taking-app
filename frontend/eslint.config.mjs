@@ -5,21 +5,21 @@
  * IF YOU COPY THIS INTO AN ESLINT CONFIG, REMOVE THIS COMMENT BLOCK.
  */
 
-import path from 'node:path';
+import path from "node:path";
 
-import { includeIgnoreFile } from '@eslint/compat';
-import js from '@eslint/js';
-import { defineConfig } from 'eslint/config';
-import { configs, plugins, rules } from 'eslint-config-airbnb-extended';
-import { rules as prettierConfigRules } from 'eslint-config-prettier';
-import prettierPlugin from 'eslint-plugin-prettier';
+import { includeIgnoreFile } from "@eslint/compat";
+import js from "@eslint/js";
+import { defineConfig } from "eslint/config";
+import { configs, plugins, rules } from "eslint-config-airbnb-extended";
+import { rules as prettierConfigRules } from "eslint-config-prettier";
+import prettierPlugin from "eslint-plugin-prettier";
 
-const gitignorePath = path.resolve('.', '.gitignore');
+const gitignorePath = path.resolve(".", ".gitignore");
 
 const jsConfig = defineConfig([
   // ESLint recommended config
   {
-    name: 'js/config',
+    name: "js/config",
     ...js.configs.recommended,
   },
   // Stylistic plugin
@@ -57,35 +57,46 @@ const typescriptConfig = defineConfig([
 const prettierConfig = defineConfig([
   // Prettier plugin
   {
-    name: 'prettier/plugin/config',
+    name: "prettier/plugin/config",
     plugins: {
       prettier: prettierPlugin,
     },
   },
   // Prettier config
   {
-    name: 'prettier/config',
+    name: "prettier/config",
     rules: {
       ...prettierConfigRules,
-      'prettier/prettier': 'error',
+      "prettier/prettier": "error",
     },
   },
 ]);
 
 const customRules = defineConfig([
   {
-    name: 'custom/rules',
+    name: "custom/rules",
     rules: {
       // No single-character variables (except _ as a throwaway)
-      'id-length': ['error', { min: 2, exceptions: ['_'] }],
+      "id-length": ["error", { min: 2, exceptions: ["_"] }],
       // Enforce import order with blank lines between groups
-      'import-x/order': ['error', {
-        groups: ['builtin', 'external', 'internal', 'parent', 'sibling', 'index'],
-        'newlines-between': 'always',
-        alphabetize: { order: 'asc', caseInsensitive: true },
-      }],
+      "import-x/order": [
+        "error",
+        {
+          groups: ["builtin", "external", "internal", "parent", "sibling", "index"],
+          "newlines-between": "always",
+          alphabetize: { order: "asc", caseInsensitive: true },
+        },
+      ],
       // No duplicate imports
-      'import-x/no-duplicates': 'error',
+      "import-x/no-duplicates": "error",
+      // Enforce arrow functions for all components
+      "react/function-component-definition": [
+        "error",
+        {
+          namedComponents: "arrow-function",
+          unnamedComponents: "arrow-function",
+        },
+      ],
     },
   },
 ]);

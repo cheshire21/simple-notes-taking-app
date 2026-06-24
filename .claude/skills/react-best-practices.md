@@ -7,6 +7,7 @@ Focus: how to write good React code within the established structure.
 
 ## Components
 
+- **Use arrow functions** for all components and utilities — `const MyComponent = (): JSX.Element => ...` with a separate `export default`
 - One component per file, filename matches the export name
 - Keep components small — if it scrolls, split it
 - Prefer composition over configuration: pass `children` or slot props rather than a growing list of boolean flags
@@ -37,10 +38,16 @@ Focus: how to write good React code within the established structure.
 
 ```tsx
 // good
-function NoteCard({ title, category = "Uncategorized", onClick }: NoteCardProps) { ... }
+const NoteCard = ({ title, category = "Uncategorized", onClick }: NoteCardProps): JSX.Element => {
+  ...
+};
+export default NoteCard;
 
-// avoid
-const NoteCard: React.FC<NoteCardProps> = ({ title }) => { ... }
+// avoid — function declaration
+export default function NoteCard({ title }: NoteCardProps): JSX.Element { ... }
+
+// avoid — React.FC adds implicit children and hides return type
+const NoteCard: React.FC<NoteCardProps> = ({ title }) => { ... };
 ```
 
 ---
