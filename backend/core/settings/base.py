@@ -20,6 +20,7 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt.token_blacklist",
     "corsheaders",
     "django_filters",
+    "drf_spectacular",
     "users",
 ]
 
@@ -106,6 +107,13 @@ REST_FRAMEWORK = {
         "anon": "30/minute",
         "user": "300/minute",
     },
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+}
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Notes Taking App API",
+    "DESCRIPTION": "REST API for the Notes Taking App",
+    "VERSION": "1.0.0",
 }
 
 SIMPLE_JWT = {

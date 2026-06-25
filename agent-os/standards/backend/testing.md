@@ -74,22 +74,26 @@ Not every endpoint has all four (e.g. a public endpoint has no auth test). Inclu
 
 ## Factories over Fixtures
 
+Use `factory.Faker(...)` by default — produces realistic, varied data. Use `factory.Sequence` only when you need guaranteed uniqueness for ordering/numbering logic.
+
 ```python
-# users/factories.py
+# users/tests/factories.py
 class UserFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = get_user_model()
 
-    email = factory.Sequence(lambda n: f"user{n}@example.com")
-    password = factory.PostGenerationMethodCall("set_password", "password")
+    email = factory.Faker("email")
+    password = factory.PostGenerationMethodCall("set_password", "testpass123")
+    is_active = True
 
-# notes/factories.py
+# notes/tests/factories.py
 class NoteFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Note
 
     user = factory.SubFactory(UserFactory)
-    title = factory.Sequence(lambda n: f"Note {n}")
+    title = factory.Faker("sentence", nb_words=5)
+    content = factory.Faker("paragraph")
 ```
 
 ## Rules
