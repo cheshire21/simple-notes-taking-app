@@ -6,13 +6,13 @@ import Providers from "./providers";
 import "./globals.css";
 
 const linter = Inter({
-  variable: "--font-linter",
+  variable: "--font-linter-base",
   subsets: ["latin"],
   weight: ["400", "700"],
 });
 
 const inriaSerif = Inria_Serif({
-  variable: "--font-inria-serif",
+  variable: "--font-inria-serif-base",
   subsets: ["latin"],
   weight: ["400", "700"],
 });

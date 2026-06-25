@@ -97,6 +97,8 @@ const customRules = defineConfig([
           unnamedComponents: "arrow-function",
         },
       ],
+      // TypeScript default params in destructuring satisfy optional prop requirements
+      "react/require-default-props": "off",
     },
   },
 ]);

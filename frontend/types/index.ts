@@ -9,3 +9,18 @@ export interface PaginatedResponse<T> {
   previous: string | null;
   results: T[];
 }
+
+export interface Category {
+  id: number;
+  name: string;
+  color: string;
+}
+
+export interface Note {
+  id: number;
+  title: string;
+  content: string;
+  category: Category;
+  created_at: string;
+  updated_at: string;
+}

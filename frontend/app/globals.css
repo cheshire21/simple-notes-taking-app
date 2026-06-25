@@ -7,6 +7,8 @@
   --color-yellow-soft: #f5d98b;
   --color-teal-soft: #7fb5aa;
   --color-olive-soft: #b5bf8f;
+  --font-linter: var(--font-linter-base), sans-serif;
+  --font-inria-serif: var(--font-inria-serif-base), serif;
 }
 
 body {
@@ -17,36 +19,104 @@ h1 {
   font-family: var(--font-inria-serif);
   font-size: 40px;
   font-weight: 700;
-  color: #5c3d1e;
 }
 
 h2 {
   font-family: var(--font-inria-serif);
   font-size: 28px;
   font-weight: 700;
-  color: #5c3d1e;
 }
 
 h3 {
   font-family: var(--font-inria-serif);
+  font-size: 24px;
+  font-weight: 700;
+}
+
+h4 {
+  font-family: var(--font-inria-serif);
   font-size: 20px;
   font-weight: 600;
-  color: #5c3d1e;
+}
+
+h5 {
+  font-family: var(--font-inria-serif);
+  font-size: 18px;
+  font-weight: 600;
+}
+
+h6 {
+  font-family: var(--font-inria-serif);
+  font-size: 16px;
+  font-weight: 600;
 }
 
 p {
   font-family: var(--font-linter);
   font-size: 14px;
-  color: #5c3d1e;
 }
 
 a {
   font-family: var(--font-linter);
   font-size: 14px;
   text-decoration: underline;
-  color: #5c3d1e;
 }
 
+span {
+  font-family: var(--font-linter);
+}
+
+label {
+  font-family: var(--font-linter);
+  font-size: 12px;
+}
+
+small {
+  font-family: var(--font-linter);
+  font-size: 12px;
+}
+
+button {
+  font-family: var(--font-linter);
+  font-size: 14px;
+}
+
+input,
+textarea {
+  font-family: var(--font-linter);
+  font-size: 14px;
+}
+
+/* ── Typography utilities ── */
+
 .note-title {
-  font-family: var(--font-inria-serif);
+  @apply font-inria-serif text-2xl font-bold;
+}
+
+.note-meta {
+  @apply font-linter text-xs;
+}
+
+.note-body {
+  @apply font-linter text-xs;
+}
+
+.page-heading {
+  @apply font-inria-serif text-[40px] font-bold;
+}
+
+.section-heading {
+  @apply font-inria-serif text-2xl font-bold;
+}
+
+.label-text {
+  @apply font-linter text-xs font-bold;
+}
+
+.body-text {
+  @apply font-linter text-sm;
+}
+
+.caption-text {
+  @apply font-linter text-xs;
 }
