@@ -263,6 +263,31 @@ api.interceptors.response.use(
 
 ---
 
+## Styling
+
+This project uses Tailwind v4 with semantic CSS classes defined in `app/globals.css`. Always read that file before writing any styles.
+
+**Use semantic classes over raw Tailwind stacks:**
+
+- If a repeated combination of Tailwind classes already exists as a named class in `globals.css`, use the named class — never re-inline the stack in a component.
+- If a new typography or layout pattern is used in more than one place, add a named class to `globals.css` using `@apply` and use that class in all components.
+- Read `globals.css` to see the current list — it is the source of truth.
+
+**Adding a new class:**
+
+```css
+/* app/globals.css */
+.my-new-class {
+  @apply font-linter text-sm font-semibold;
+}
+```
+
+Then use `className="my-new-class"` in the component — not `className="font-linter text-sm font-semibold"`.
+
+**When NOT to use `@apply`:** one-off layout utilities (`flex`, `gap-4`, `mt-2`, `w-full`) that are structural, not typographic. Those stay inline in the component.
+
+---
+
 ## Common Mistakes
 
 | Mistake | Fix |

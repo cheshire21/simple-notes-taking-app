@@ -425,10 +425,12 @@ class NoteAdmin(admin.ModelAdmin):
 - `TransactionTestCase` — needed only when testing DB-level transaction behavior
 
 ### Use Factories, Not Fixtures
-Fixtures go stale as models change. Use `factory_boy`:
+Fixtures go stale as models change. Use `factory_boy` with `Faker` for realistic test data.
+
+Factories live in `<app>/tests/factories.py` — not at the app root.
 
 ```python
-# users/factories.py
+# users/tests/factories.py
 import factory
 from django.contrib.auth import get_user_model
 
@@ -436,17 +438,49 @@ class UserFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = get_user_model()
 
-    email = factory.Sequence(lambda n: f"user{n}@example.com")
-    password = factory.PostGenerationMethodCall("set_password", "password")
+    email = factory.Faker("email")
+    password = factory.PostGenerationMethodCall("set_password", "testpass123")
+    is_active = True
+    is_staff = False
 
-# notes/factories.py
+# notes/tests/factories.py
+import factory
+from users.tests.factories import UserFactory
+
+class CategoryFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Category
+
+    user = factory.SubFactory(UserFactory)
+    name = factory.Faker("word")
+    color = factory.Faker("hex_color")
+
 class NoteFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Note
 
     user = factory.SubFactory(UserFactory)
-    title = factory.Sequence(lambda n: f"Note {n}")
+    category = factory.SubFactory(CategoryFactory, user=factory.SelfAttribute("..user"))
+    title = factory.Faker("sentence", nb_words=5)
+    content = factory.Faker("paragraph")
 ```
+
+**Useful `factory.Faker` providers:**
+
+| Field type | Provider |
+|---|---|
+| Email | `factory.Faker("email")` |
+| Name | `factory.Faker("name")` |
+| Short text | `factory.Faker("sentence", nb_words=5)` |
+| Long text | `factory.Faker("paragraph")` |
+| URL | `factory.Faker("url")` |
+| Hex color | `factory.Faker("hex_color")` |
+| UUID | `factory.Faker("uuid4")` |
+| Past datetime | `factory.Faker("past_datetime")` |
+
+**When to use `factory.Sequence` vs `factory.Faker`:**
+- Use `factory.Faker(...)` by default — produces realistic, varied data
+- Use `factory.Sequence(lambda n: f"user{n}@example.com")` only when you need guaranteed uniqueness and sequential values (e.g. testing ordering or numbering logic)
 
 ### What to Test at Each Layer
 | Layer | Test |
