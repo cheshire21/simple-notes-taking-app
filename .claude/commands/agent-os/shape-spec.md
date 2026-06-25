@@ -124,12 +124,12 @@ Example: `2026-01-15-1430-user-comment-system/`
 
 ### Step 7: Structure the Plan
 
-Now build the plan with **Task 1 always being "Save spec documentation"**.
+Every plan follows the same fixed pipeline structure. **Task 1 is always "Save spec documentation", Task 2 is always "PM → In Progress", the last two tasks are always "QA → Verify" and "PM → Done".**
 
 Present this structure to the user:
 
 ```
-Here's the plan structure. Task 1 saves all our shaping work before implementation begins.
+Here's the plan structure. The pipeline is always: PM → Engineer → QA → PM.
 
 ---
 
@@ -143,13 +143,25 @@ Create `agent-os/specs/{folder-name}/` with:
 - **references.md** — Pointers to reference implementations studied
 - **visuals/** — Any mockups or screenshots provided
 
-## Task 2: [First implementation task]
+## Task 2: PM Agent — Move [TICKET-ID] to In Progress
 
-[Description based on the feature]
+project-manager agent moves the ticket status from Todo → In Progress in Linear before any code work begins.
 
-## Task 3: [Next task]
+## Task 3: [Engineer] — [First implementation task]
+
+[Description based on the feature — assigned to nextjs-engineer or django-engineer]
+
+## Task 4+: [Engineer] — [Additional implementation tasks if needed]
 
 ...
+
+## Task N: QA Agent — Verify Done Criteria
+
+qa-engineer agent fetches the ticket, verifies every done criterion against the actual code using Read and Bash, checks off passing criteria boxes in Linear, and returns a READY or NOT READY verdict.
+
+## Task N+1: PM Agent — Move [TICKET-ID] to Done
+
+project-manager agent moves the ticket to Done — **only if QA returned READY**. If NOT READY, engineer fixes the failures and QA re-verifies before PM acts.
 
 ---
 
@@ -172,8 +184,11 @@ When the full plan is ready:
 ```
 Plan complete. When you approve and execute:
 
-1. Task 1 will save all spec documentation first
-2. Then implementation tasks will proceed
+1. Spec docs saved
+2. PM moves ticket to In Progress
+3. Engineer implements
+4. QA verifies done criteria + checks Linear boxes
+5. PM moves ticket to Done (only if QA says READY)
 
 Ready to start? (approve / adjust)
 ```
