@@ -194,24 +194,62 @@ Do not over-optimize. Profile before you `memo`.
 
 - Use for truly global concerns: authenticated user, theme, locale
 - Split by concern — one context per domain, not one giant `AppContext`
-- Always memoize the context value
+- Always memoize the context value with `useMemo`
+- For state backed by an external store (localStorage, sessionStorage), use `useSyncExternalStore` — not `useState` + `useEffect` (the `react-hooks/set-state-in-effect` rule forbids calling `setState` synchronously inside an effect)
 
 ```tsx
-const AuthContext = createContext<AuthContextValue | null>(null);
+// features/auth/context/AuthContext.tsx
+"use client";
+import { createContext, useMemo, useSyncExternalStore } from "react";
+
+export interface AuthContextValue {
+  token: string | null;
+  isAuthenticated: boolean;
+}
+
+export const AuthContext = createContext<AuthContextValue>({ token: null, isAuthenticated: false });
+
+// Stable module-level references — never recreate inside the component
+const subscribe = (cb: () => void) => {
+  window.addEventListener("storage", cb);
+  return () => window.removeEventListener("storage", cb);
+};
+const getSnapshot = () => localStorage.getItem("access_token");
+const getServerSnapshot = () => null; // SSR-safe: returns null on the server
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }): JSX.Element => {
-  const [user, setUser] = useState<User | null>(null);
-  const logout = useCallback(() => setUser(null), []);
-  const value = useMemo(() => ({ user, logout }), [user, logout]);
+  const token = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+  const value = useMemo(() => ({ token, isAuthenticated: token !== null }), [token]);
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
-export const useAuth = (): AuthContextValue => {
-  const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error("useAuth must be used inside AuthProvider");
-  return ctx;
+// features/auth/hooks/useAuth.ts
+export const useAuth = (): AuthContextValue => useContext(AuthContext);
+```
+
+### AuthGuard — enforcing access via context
+
+When a context value should gate rendering or trigger navigation, use a dedicated wrapper component rather than putting that logic in the provider or in each page:
+
+```tsx
+// features/auth/components/AuthGuard.tsx — the only place redirect logic lives
+"use client";
+const AuthGuard = ({ children, requireAuth }: { children: React.ReactNode; requireAuth: boolean }) => {
+  const router = useRouter();
+  const { token } = useAuth();
+
+  useEffect(() => {
+    if (requireAuth && token === null) router.replace("/login");
+    else if (!requireAuth && token !== null) router.replace("/dashboard/notes");
+  }, [token, requireAuth, router]);
+
+  if (requireAuth && token === null) return null;
+  if (!requireAuth && token !== null) return null;
+  return <>{children}</>;
 };
 ```
+
+Pages and layouts consume `AuthGuard` — they never contain redirect logic themselves. See `nextjs-architecture.md` → Route Protection for the full pattern.
 
 ---
 
@@ -233,6 +271,178 @@ export const useAuth = (): AuthContextValue => {
 
 ---
 
+## Unit Testing
+
+### Setup
+
+This project uses **Vitest** + **React Testing Library** + **MSW** (Mock Service Worker):
+
+```bash
+npm install -D vitest @vitejs/plugin-react @testing-library/react @testing-library/user-event @testing-library/jest-dom msw
+```
+
+Configure in `vitest.config.ts`:
+
+```ts
+import { defineConfig } from "vitest/config";
+import react from "@vitejs/plugin-react";
+
+export default defineConfig({
+  plugins: [react()],
+  test: {
+    environment: "jsdom",
+    globals: true,
+    setupFiles: ["./src/test/setup.ts"],
+  },
+});
+```
+
+Setup file `src/test/setup.ts`:
+
+```ts
+import "@testing-library/jest-dom";
+```
+
+---
+
+### What to test
+
+| Layer | Test |
+|---|---|
+| **Hooks** | State changes, side effects, returned values |
+| **Components** | Renders correctly, responds to user interaction |
+| **Utils** | Pure function input/output |
+| **API functions** | Correct endpoint, payload, response mapping |
+
+Do **not** test implementation details — test behaviour the user or caller can observe.
+
+---
+
+### Testing hooks
+
+Use `renderHook` from `@testing-library/react`. Wrap with `QueryClientProvider` for React Query hooks:
+
+```ts
+import { renderHook, waitFor } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import type { ReactNode } from "react";
+import { useLogin } from "@/features/auth/hooks/useLogin";
+
+const createWrapper = () => {
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  return ({ children }: { children: ReactNode }) => (
+    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+  );
+};
+
+describe("useLogin", () => {
+  it("stores tokens in localStorage on success", async () => {
+    const { result } = renderHook(() => useLogin(), { wrapper: createWrapper() });
+
+    result.current.mutate({ email: "user@example.com", password: "password" });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    expect(localStorage.getItem("access_token")).toBeTruthy();
+    expect(localStorage.getItem("refresh_token")).toBeTruthy();
+  });
+});
+```
+
+---
+
+### Testing components
+
+Use `render` + `screen` + `userEvent`:
+
+```ts
+import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { Button } from "@/components/ui/Button";
+
+describe("Button", () => {
+  it("calls onClick when clicked", async () => {
+    const user = userEvent.setup();
+    const handleClick = vi.fn();
+
+    render(<Button onClick={handleClick}>Click me</Button>);
+    await user.click(screen.getByRole("button", { name: "Click me" }));
+
+    expect(handleClick).toHaveBeenCalledOnce();
+  });
+});
+```
+
+**Queries in priority order** (most accessible → least):
+1. `getByRole` — preferred, queries by ARIA role
+2. `getByLabelText` — for form fields
+3. `getByPlaceholderText` — fallback for inputs
+4. `getByText` — for visible text content
+5. `getByTestId` — last resort only
+
+---
+
+### Mocking API calls
+
+Use **MSW** to intercept HTTP — never mock the axios instance or API functions directly:
+
+```ts
+import { http, HttpResponse } from "msw";
+import { setupServer } from "msw/node";
+
+const server = setupServer(
+  http.post("/api/auth/token/", () =>
+    HttpResponse.json({ access: "access-token", refresh: "refresh-token" })
+  ),
+);
+
+beforeAll(() => server.listen());
+afterEach(() => server.resetHandlers());
+afterAll(() => server.close());
+```
+
+Override per test for error cases:
+
+```ts
+it("handles login failure", async () => {
+  server.use(
+    http.post("/api/auth/token/", () =>
+      HttpResponse.json({ detail: "No active account" }, { status: 401 })
+    ),
+  );
+  // ... assert error state
+});
+```
+
+---
+
+### Test file location and naming
+
+- Co-locate tests next to the file: `hooks/useLogin.ts` → `hooks/useLogin.test.ts`
+- One `describe` block per file, one `it` per behaviour
+- Describe block name = module name; `it` name = what it does in plain English
+
+```
+features/auth/
+├── api.ts
+├── api.test.ts
+├── hooks/
+│   ├── useLogin.ts
+│   ├── useLogin.test.ts
+```
+
+---
+
+### Rules
+
+- Arrow functions only in test files — consistent with production code
+- Never use `it.only` or `describe.only` in committed code — use `it.skip` temporarily
+- Never mock localStorage manually — use `@testing-library/jest-dom`'s built-in jsdom localStorage
+- Clear localStorage between tests: `afterEach(() => localStorage.clear())`
+- Each test must be fully independent — no shared mutable state between tests
+
+---
+
 ## Common Mistakes
 
 | Mistake | Fix |
@@ -244,3 +454,6 @@ export const useAuth = (): AuthContextValue => {
 | Index as list key | Use a stable unique id |
 | Mutating state directly | Return a new object/array |
 | `any` on prop types | Proper `interface` / `type` |
+| Mocking axios/api directly | Use MSW to intercept HTTP |
+| `getByTestId` as first query | Use `getByRole` first |
+| Shared state between tests | `afterEach` cleanup |

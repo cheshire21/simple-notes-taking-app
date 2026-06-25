@@ -103,6 +103,16 @@ const customRules = defineConfig([
   },
 ]);
 
+const testConfig = defineConfig([
+  {
+    name: "test/rules",
+    files: ["**/*.test.ts", "**/*.test.tsx", "**/test/**/*.ts"],
+    rules: {
+      "import-x/no-extraneous-dependencies": ["error", { devDependencies: true }],
+    },
+  },
+]);
+
 export default defineConfig([
   // Ignore files and folders listed in .gitignore
   includeIgnoreFile(gitignorePath),
@@ -116,4 +126,6 @@ export default defineConfig([
   ...prettierConfig,
   // Custom rules
   ...customRules,
+  // Test files — allow devDependency imports
+  ...testConfig,
 ]);
