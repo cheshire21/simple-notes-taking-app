@@ -3,7 +3,7 @@
 import { useState } from "react";
 import type { JSX } from "react";
 
-import Button from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
 import CategoryDropdown from "@/components/ui/CategoryDropdown";
 import Modal from "@/components/ui/Modal";
 import NoteCard from "@/components/ui/NoteCard";
@@ -78,10 +78,14 @@ const DesignTestPage = (): JSX.Element => {
       <section>
         <p className="mb-4 text-sm font-bold uppercase tracking-widest text-brown">Button</p>
         <div className="flex flex-wrap gap-4 items-center">
-          <Button>+ New Note</Button>
-          <Button variant="solid">+ New Note (solid)</Button>
-          <Button fullWidth>Full Width Button</Button>
-          <Button onClick={() => setModalOpen(true)}>Open Modal</Button>
+          <Button variant="outline">+ New Note</Button>
+          <Button variant="default">+ New Note (solid)</Button>
+          <Button variant="outline" className="w-full">
+            Full Width Button
+          </Button>
+          <Button variant="outline" onClick={() => setModalOpen(true)}>
+            Open Modal
+          </Button>
         </div>
       </section>
 
@@ -125,7 +129,9 @@ const DesignTestPage = (): JSX.Element => {
           close.
         </p>
         <div className="mt-6">
-          <Button onClick={() => setModalOpen(false)}>Close</Button>
+          <Button variant="outline" onClick={() => setModalOpen(false)}>
+            Close
+          </Button>
         </div>
       </Modal>
     </main>

@@ -62,6 +62,22 @@ export const useCreateNote = () => {
 };
 ```
 
+## Styling
+
+This project uses **Tailwind v4** + **shadcn/ui**. Before writing any Tailwind classes or UI elements:
+
+1. Read `app/globals.css` first — color tokens, font families, typography utility classes
+2. Read `components/ui/` — use existing shadcn components before building anything new
+
+```tsx
+// wrong — hardcoded hex, builds a custom input
+<input className="border border-[#957139] text-[#5c3d1e]" />
+
+// correct — uses design tokens, reuses shadcn Input
+import { Input } from "@/components/ui/input";
+<Input className="text-brown" />
+```
+
 ## Linting
 
 Run `npm run lint` before every commit. ESLint rules enforce:

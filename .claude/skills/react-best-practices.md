@@ -255,7 +255,15 @@ Pages and layouts consume `AuthGuard` — they never contain redirect logic them
 
 ## Forms
 
-Use **react-hook-form** + **zod** for all forms. Never hand-roll validation with `useState`. Both packages are installed: `react-hook-form`, `@hookform/resolvers`, `zod`.
+Use **react-hook-form** + **zod** for all forms. Never hand-roll validation with `useState`. Packages installed: `react-hook-form`, `@hookform/resolvers`, `zod`.
+
+**Hard rules:**
+- Every form uses `useForm` + `zodResolver` — no exceptions
+- Every form schema lives in `features/<feature>/schemas/<name>.schema.ts` — never inline in the component
+- Always render fields with shadcn `Form / FormField / FormItem / FormControl / FormMessage` — never raw `<input>` + manual `{errors.x && <p>}` blocks
+- API field errors → `form.setError("fieldName", { message })` — never store in separate state
+- General API errors → `form.setError("root", { message })` — render via `form.formState.errors.root`
+- Disable submit while `isPending` to prevent double-submit
 
 ### Schema file
 
@@ -281,7 +289,7 @@ export const registerSchema = z.object({
   password: z.string().min(8, "Password must be at least 8 characters"),
 });
 
-export type RegisterFormValues = z.infer<typeof schema>;
+export type RegisterFormValues = z.infer<typeof registerSchema>;
 ```
 
 ### Form setup
@@ -291,43 +299,78 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { registerSchema, type RegisterFormValues } from "@/features/auth/schemas/register.schema";
 
-const { register, handleSubmit, setError, formState: { errors, isSubmitting } } =
-  useForm<RegisterFormValues>({ resolver: zodResolver(registerSchema) });
+const form = useForm<RegisterFormValues>({ resolver: zodResolver(registerSchema) });
+```
+
+### Rendering with shadcn Form components
+
+Always use shadcn's `Form`, `FormField`, `FormItem`, `FormControl`, `FormMessage` — never render raw `<input>` elements or manual `{errors.x && <p>}` blocks.
+
+```tsx
+import { Button } from "@/components/ui/button";
+import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+
+return (
+  <Form {...form}>
+    <form onSubmit={form.handleSubmit(onSubmit)} noValidate>
+      <FormField
+        control={form.control}
+        name="email"
+        render={({ field }) => (
+          <FormItem>
+            <FormControl>
+              <Input placeholder="Email address" type="email" {...field} />
+            </FormControl>
+            <FormMessage /> {/* auto-renders errors.email.message */}
+          </FormItem>
+        )}
+      />
+
+      <FormField
+        control={form.control}
+        name="password"
+        render={({ field }) => (
+          <FormItem>
+            <FormControl>
+              <Input type="password" placeholder="Password" {...field} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      {form.formState.errors.root && (
+        <p className="text-sm text-destructive text-center">
+          {form.formState.errors.root.message}
+        </p>
+      )}
+
+      <Button type="submit" disabled={form.formState.isSubmitting}>Sign Up</Button>
+    </form>
+  </Form>
+);
 ```
 
 ### Submitting with a React Query mutation
 
 ```tsx
-const { mutate } = useRegister();
+const { mutate, isPending } = useRegister();
 
-const onSubmit = (values: FormValues): void => {
+const onSubmit = (values: RegisterFormValues): void => {
   mutate(values, {
     onSuccess: () => router.push("/login"),
     onError: (error) => {
       if (isAxiosError(error) && error.response?.data) {
         const data = error.response.data as Record<string, string[]>;
-        if (data.email) setError("email", { message: data.email[0] });
-        if (data.password) setError("password", { message: data.password[0] });
+        if (data.email) form.setError("email", { message: data.email[0] });
+        if (data.password) form.setError("password", { message: data.password[0] });
         const general = data.detail ?? data.non_field_errors?.[0];
-        if (general) setError("root", { message: Array.isArray(general) ? general[0] : general });
+        if (general) form.setError("root", { message: Array.isArray(general) ? general[0] : general });
       }
     },
   });
 };
-
-return (
-  <form onSubmit={handleSubmit(onSubmit)}>
-    <input {...register("email")} placeholder="Email address" />
-    {errors.email && <p>{errors.email.message}</p>}
-
-    <input {...register("password")} type="password" placeholder="Password" />
-    {errors.password && <p>{errors.password.message}</p>}
-
-    {errors.root && <p>{errors.root.message}</p>}
-
-    <button type="submit" disabled={isSubmitting}>Sign Up</button>
-  </form>
-);
 ```
 
 ### Rules

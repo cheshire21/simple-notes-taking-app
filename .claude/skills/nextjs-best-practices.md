@@ -265,15 +265,18 @@ api.interceptors.response.use(
 
 ## Styling
 
-This project uses Tailwind v4 with semantic CSS classes defined in `app/globals.css`. Always read that file before writing any styles.
+This project uses **Tailwind v4** + **shadcn/ui**. Before writing any Tailwind classes or UI elements, always read these two files first — in this order:
 
-**Use semantic classes over raw Tailwind stacks:**
+1. **`app/globals.css`** — color tokens (`cream`, `brown`, `salmon`, `yellow-soft`, `teal-soft`, `olive-soft`), font families (`font-linter`, `font-inria-serif`), typography utility classes (`.page-heading`, `.body-text`, `.note-title`, etc.), and shadcn CSS variable mappings.
+2. **`components/ui/`** — all available shadcn components (`Button`, `Input`, `PasswordInput`, `Form`, `Dialog`, `Label`). Never build a new primitive if one already exists here.
 
-- If a repeated combination of Tailwind classes already exists as a named class in `globals.css`, use the named class — never re-inline the stack in a component.
-- If a new typography or layout pattern is used in more than one place, add a named class to `globals.css` using `@apply` and use that class in all components.
-- Read `globals.css` to see the current list — it is the source of truth.
+**Rules:**
+- Never use hardcoded hex colors (`text-[#957139]`) — always use named tokens (`text-brown`) or shadcn semantic tokens (`text-foreground`, `text-muted-foreground`)
+- Never build a new UI component if one already exists in `components/ui/` — reuse it
+- Never define new typography styles inline if a utility class already exists in `globals.css`
+- If a repeated Tailwind stack is used in more than one place, add a named class to `globals.css` with `@apply` and use that class everywhere
 
-**Adding a new class:**
+**Adding a new utility class:**
 
 ```css
 /* app/globals.css */
@@ -281,8 +284,6 @@ This project uses Tailwind v4 with semantic CSS classes defined in `app/globals.
   @apply font-linter text-sm font-semibold;
 }
 ```
-
-Then use `className="my-new-class"` in the component — not `className="font-linter text-sm font-semibold"`.
 
 **When NOT to use `@apply`:** one-off layout utilities (`flex`, `gap-4`, `mt-2`, `w-full`) that are structural, not typographic. Those stay inline in the component.
 

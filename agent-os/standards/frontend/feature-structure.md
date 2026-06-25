@@ -8,17 +8,19 @@ frontend/
 │   ├── (auth)/         # route group, no URL segment
 │   └── (dashboard)/
 ├── components/
-│   ├── ui/             # Button, Input, Modal, Badge, Spinner
+│   ├── ui/             # shadcn components: button, input, form, dialog, label + PasswordInput
 │   └── layout/         # Navbar, Sidebar, PageWrapper
 ├── features/           # all real logic lives here
 │   ├── auth/
 │   │   ├── components/ # LoginForm, RegisterForm
 │   │   ├── hooks/      # useLogin, useRegister, useLogout
+│   │   ├── schemas/    # register.schema.ts, login.schema.ts
 │   │   ├── api.ts
 │   │   └── types.ts
 │   └── notes/
 │       ├── components/ # NoteCard, NoteList, NoteModal
 │       ├── hooks/      # useNotes, useCreateNote, useDeleteNote
+│       ├── schemas/    # note.schema.ts, category.schema.ts
 │       ├── api.ts
 │       └── types.ts
 ├── hooks/              # shared hooks used by 2+ features
@@ -26,6 +28,18 @@ frontend/
 ├── types/              # shared TypeScript types
 └── utils/              # pure helper functions
 ```
+
+## Before Writing Any UI or Styles
+
+**Always read these two files first — in this order:**
+
+1. `app/globals.css` — design tokens (`cream`, `brown`, `salmon`, `yellow-soft`, `teal-soft`, `olive-soft`), font families (`font-linter`, `font-inria-serif`), typography utility classes (`.page-heading`, `.body-text`, `.note-title`), and shadcn CSS variable mappings.
+2. `components/ui/` — all available shadcn components. Never build a new primitive if one already exists here.
+
+**Hard rules:**
+- Never use hardcoded hex colors — use named tokens (`text-brown`) or shadcn semantic tokens (`text-foreground`, `border-input`)
+- Never build a new UI component if one already exists in `components/ui/`
+- Never define typography styles inline if a utility class already exists in `globals.css`
 
 ## Pages Are Thin
 

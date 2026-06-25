@@ -24,7 +24,7 @@ frontend/
 │       └── notes/
 │           └── page.tsx
 ├── components/                 # shared reusable UI
-│   ├── ui/                     # Button, Input, Modal, Badge...
+│   ├── ui/                     # shadcn components: button, input, form, dialog, label + PasswordInput
 │   └── layout/                 # Navbar, Sidebar, PageWrapper...
 ├── features/                   # feature logic
 │   ├── auth/
@@ -51,12 +51,14 @@ features/
 ├── auth/
 │   ├── components/             # LoginForm, RegisterForm
 │   ├── hooks/                  # useLogin, useRegister, useAuth
+│   ├── schemas/                # register.schema.ts, login.schema.ts (zod schemas + inferred types)
 │   ├── api.ts                  # all API calls for this feature
 │   ├── types.ts                # User, LoginPayload, RegisterPayload
 │   └── utils.ts                # token helpers, validation
 └── notes/
     ├── components/             # NoteCard, NoteList, NoteForm, CategoryBadge
     ├── hooks/                  # useNotes, useCreateNote, useCategories
+    ├── schemas/                # note.schema.ts, category.schema.ts
     ├── api.ts                  # all API calls for this feature
     ├── types.ts                # Note, Category
     └── utils.ts                # note formatting helpers
@@ -130,14 +132,17 @@ export const deleteNote = (id: number) =>
 
 ### `components/` — Shared UI
 - Only generic, reusable components with no feature-specific logic
-- `ui/` — primitive components (Button, Input, Modal, Badge, Spinner)
+- `ui/` — **shadcn/ui** components: `button`, `input`, `form`, `dialog`, `label` + custom `PasswordInput`
 - `layout/` — structural components (Navbar, Sidebar, PageWrapper)
 
-**Before writing any Tailwind classes or new components, always read:**
-- `app/globals.css` — color tokens (`cream`, `brown`, `salmon`, `yellow-soft`, `teal-soft`, `olive-soft`), font utilities (`font-linter`, `font-inria-serif`), and typography classes (`.page-heading`, `.body-text`, `.note-title`, etc.)
-- `components/ui/` — existing shared components to reuse
+**Before writing any Tailwind classes or UI elements, always read these two files first — in this order:**
+1. `app/globals.css` — color tokens (`cream`, `brown`, `salmon`, `yellow-soft`, `teal-soft`, `olive-soft`), font families (`font-linter`, `font-inria-serif`), typography utility classes (`.page-heading`, `.body-text`, `.note-title`, etc.), and shadcn CSS variable mappings (`--background`, `--foreground`, `--primary`, `--border`, etc.)
+2. `components/ui/` — all available shadcn components. Never build a new primitive if one already exists here.
 
-Never use hardcoded hex colors — always use the named design tokens. Never build a new component if one already exists in `components/ui/`.
+**Hard rules:**
+- Never use hardcoded hex colors — always use named design tokens (`text-brown`) or shadcn semantic tokens (`text-foreground`, `border-input`)
+- Never build a new component if one already exists in `components/ui/`
+- Never define typography styles inline if a utility class already exists in `globals.css`
 
 ```tsx
 // components/ui/Button.tsx
