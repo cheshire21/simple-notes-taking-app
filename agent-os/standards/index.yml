@@ -1,2 +1,17 @@
 # Agent OS Standards Index
 
+backend:
+  services-selectors:
+    description: Services/selectors architecture — noun_verb naming, keyword-only args, thin views, ownership via 404
+  serializers-views:
+    description: Split input/output serializers, APIView with explicit permission_classes, HTTP status code constants
+  testing:
+    description: One class per view, descriptive method names, 4 required test categories, factories over fixtures
+
+frontend:
+  auth-tokens:
+    description: JWT in localStorage, axios interceptor for silent refresh, retried flag, redirect on failure
+  code-style:
+    description: Arrow functions only, double quotes, explicit TypeScript return types, no function declarations
+  feature-structure:
+    description: Feature-based folder layout, thin pages, dependency rules between layers

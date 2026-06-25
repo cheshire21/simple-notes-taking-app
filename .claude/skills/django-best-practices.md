@@ -51,6 +51,23 @@ class Note(models.Model):
         return self.title
 ```
 
+### UUIDs as Primary Keys
+
+Always use UUID as the primary key — never expose sequential integer IDs in API responses. UUIDs are safe to use in URLs and responses because they are not enumerable.
+
+```python
+import uuid
+from django.db import models
+
+class Note(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    ...
+```
+
+- Use `UUIDField(primary_key=True, default=uuid.uuid4, editable=False)` on every model
+- The UUID is the only ID exposed in API responses and URLs
+- Never add a separate integer `id` field alongside a UUID — one primary key per model
+
 ### ForeignKey Rules
 - Always set `related_name` — explicit is better than Django's default `<model>_set`
 - Always set `on_delete` explicitly — never leave it to chance

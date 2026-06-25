@@ -413,22 +413,29 @@ Always use `status.HTTP_XXX` constants from `rest_framework` — never raw integ
 ## Testing
 
 ### Test Class and Client
-Use `APITestCase` and `APIClient` from DRF for all API tests.
+Use `APITestCase` and `force_authenticate` for all API tests. **One class per view, descriptive method names.**
 
 ```python
 from rest_framework.test import APITestCase
 from rest_framework import status
 
-class NoteCreateTests(APITestCase):
+class NoteCreateViewTests(APITestCase):
     def setUp(self):
         self.user = UserFactory()
         self.other_user = UserFactory()
         self.url = "/api/notes/"
 
-    # Auth boundary
+    # Auth
     def test_unauthenticated_returns_401(self):
         response = self.client.post(self.url, {"title": "Test"})
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    # Validation
+    def test_blank_title_returns_400(self):
+        self.client.force_authenticate(user=self.user)
+        response = self.client.post(self.url, {"title": ""})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("title", response.data)
 
     # Happy path
     def test_creates_note_and_returns_201(self):
@@ -437,26 +444,47 @@ class NoteCreateTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data["title"], "My Note")
 
-    # Validation
-    def test_blank_title_returns_400(self):
+
+class NoteDetailViewTests(APITestCase):
+    def setUp(self):
+        self.user = UserFactory()
+        self.other_user = UserFactory()
+        self.note = NoteFactory(user=self.user)
+        self.url = f"/api/notes/{self.note.id}/"
+
+    # Auth
+    def test_unauthenticated_returns_401(self):
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    # Ownership — 404, not 403, to avoid leaking existence
+    def test_other_user_returns_404(self):
+        self.client.force_authenticate(user=self.other_user)
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    # Happy path
+    def test_returns_note_for_owner(self):
         self.client.force_authenticate(user=self.user)
-        response = self.client.post(self.url, {"title": ""})
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn("title", response.data)
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["id"], str(self.note.id))
 ```
 
 ### What to Test Per Endpoint
-For every endpoint, cover all four categories:
+For every endpoint, cover these four categories:
 
 | Category | What |
 |----------|------|
 | **Auth** | Unauthenticated → 401 |
-| **Ownership** | Authenticated as wrong user → 403 or 404 |
+| **Ownership** | Authenticated as wrong user → 404 (not 403 — don't leak existence) |
 | **Validation** | Missing fields, invalid values → 400 with field errors |
 | **Happy path** | Correct input → expected status code + response shape |
 
-### Use force_authenticate, Not Tokens
-`force_authenticate(user=self.user)` skips token parsing overhead — use it in all tests unless you're specifically testing auth token logic.
+### Rules
+- One `TestCase` class per view class (e.g. `NoteCreateViewTests`, `NoteDetailViewTests`)
+- Test method names read as sentences: `test_unauthenticated_returns_401`, `test_creates_note_and_returns_201`
+- `force_authenticate(user=self.user)` — skips token parsing; use it everywhere except when testing auth token logic itself
 
 ---
 
