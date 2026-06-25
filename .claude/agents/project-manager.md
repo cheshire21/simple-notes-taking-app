@@ -1,5 +1,6 @@
 ---
 name: project-manager
+color: blue
 description: Project manager agent. Use to plan work into phases and tasks, create Linear tickets, assign tasks to engineer agents, and move tickets to done when engineers complete their work. Coordinates between django-engineer and nextjs-engineer agents.
 model: claude-sonnet-4-6
 tools:

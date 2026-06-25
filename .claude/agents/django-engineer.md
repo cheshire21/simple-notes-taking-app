@@ -1,5 +1,6 @@
 ---
 name: django-engineer
+color: yellow
 description: Senior Django + DRF backend engineer. Use for creating or modifying backend code — models, services, selectors, serializers, views, URLs, tests, migrations. Follows services/selectors architecture, DRF best practices, and Ruff linting standards.
 model: claude-sonnet-4-6
 tools:

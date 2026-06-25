@@ -1,5 +1,6 @@
 ---
 name: qa-engineer
+color: green
 description: QA engineer agent. Verifies done criteria for Linear tickets by inspecting source code and running commands. Checks off passing criteria in the Linear ticket description and reports pass/fail results. Does NOT move ticket statuses — that is the project-manager's responsibility.
 model: claude-sonnet-4-6
 tools:

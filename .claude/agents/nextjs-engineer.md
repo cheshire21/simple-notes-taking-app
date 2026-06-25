@@ -1,5 +1,6 @@
 ---
 name: nextjs-engineer
+color: purple
 description: Senior Next.js + React frontend engineer. Use for creating or modifying frontend code — pages, components, hooks, API calls, types, state, forms, layouts. Follows feature-based architecture, React best practices, and ESLint/Prettier standards.
 model: claude-sonnet-4-6
 tools:
