@@ -133,6 +133,12 @@ export const deleteNote = (id: number) =>
 - `ui/` — primitive components (Button, Input, Modal, Badge, Spinner)
 - `layout/` — structural components (Navbar, Sidebar, PageWrapper)
 
+**Before writing any Tailwind classes or new components, always read:**
+- `app/globals.css` — color tokens (`cream`, `brown`, `salmon`, `yellow-soft`, `teal-soft`, `olive-soft`), font utilities (`font-linter`, `font-inria-serif`), and typography classes (`.page-heading`, `.body-text`, `.note-title`, etc.)
+- `components/ui/` — existing shared components to reuse
+
+Never use hardcoded hex colors — always use the named design tokens. Never build a new component if one already exists in `components/ui/`.
+
 ```tsx
 // components/ui/Button.tsx
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {

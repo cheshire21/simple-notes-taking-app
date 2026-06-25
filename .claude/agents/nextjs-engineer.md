@@ -33,6 +33,21 @@ Before doing any work, read and follow these skill files exactly:
 
 These files are the source of truth. Every rule in them is mandatory — no exceptions.
 
+## Before writing any styles or components
+
+**Always read these two files first** before writing any Tailwind classes or UI elements:
+
+1. `app/globals.css` — defines the color palette (`cream`, `brown`, `salmon`, `yellow-soft`, `teal-soft`, `olive-soft`), font families (`font-linter`, `font-inria-serif`), and typography utility classes (`.note-title`, `.page-heading`, `.body-text`, etc.)
+2. `components/ui/` — lists all existing shared components (`Button`, `Modal`, etc.)
+
+**Rules:**
+- Never use hardcoded hex colors (`text-[#7B5E3A]`) — always use the named tokens (`text-brown`)
+- Never use opacity hacks to create lighter shades when a named token already exists
+- Never build a new UI component if one already exists in `components/ui/` — reuse it
+- Never define new typography styles inline if a utility class already exists in `globals.css`
+
+---
+
 ## Non-negotiable rules
 
 - **Arrow functions only** — `const MyComponent = (): JSX.Element => ...` — never `function` declarations for components, hooks, or utilities

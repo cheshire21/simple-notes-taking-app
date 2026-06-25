@@ -255,10 +255,87 @@ Pages and layouts consume `AuthGuard` — they never contain redirect logic them
 
 ## Forms
 
-- Controlled inputs for forms needing real-time validation or dynamic fields
-- Uncontrolled inputs + `FormData` for simple submit-only forms
-- Validate on the client for UX, always re-validate on the server for security
-- Use React Hook Form for complex forms — don't hand-roll validation logic
+Use **react-hook-form** + **zod** for all forms. Never hand-roll validation with `useState`. Both packages are installed: `react-hook-form`, `@hookform/resolvers`, `zod`.
+
+### Schema file
+
+Each form gets its own schema file inside a `schemas/` folder within the feature. Never define schemas inline in the component.
+
+```
+features/auth/
+├── components/
+│   └── RegisterForm.tsx          ← imports schema
+├── schemas/
+│   └── register.schema.ts        ← schema + inferred type
+├── hooks/
+├── api.ts
+└── types.ts
+```
+
+`features/auth/schemas/register.schema.ts`:
+```ts
+import { z } from "zod";
+
+export const registerSchema = z.object({
+  email: z.string().email("Please enter a valid email"),
+  password: z.string().min(8, "Password must be at least 8 characters"),
+});
+
+export type RegisterFormValues = z.infer<typeof schema>;
+```
+
+### Form setup
+
+```ts
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { registerSchema, type RegisterFormValues } from "@/features/auth/schemas/register.schema";
+
+const { register, handleSubmit, setError, formState: { errors, isSubmitting } } =
+  useForm<RegisterFormValues>({ resolver: zodResolver(registerSchema) });
+```
+
+### Submitting with a React Query mutation
+
+```tsx
+const { mutate } = useRegister();
+
+const onSubmit = (values: FormValues): void => {
+  mutate(values, {
+    onSuccess: () => router.push("/login"),
+    onError: (error) => {
+      if (isAxiosError(error) && error.response?.data) {
+        const data = error.response.data as Record<string, string[]>;
+        if (data.email) setError("email", { message: data.email[0] });
+        if (data.password) setError("password", { message: data.password[0] });
+        const general = data.detail ?? data.non_field_errors?.[0];
+        if (general) setError("root", { message: Array.isArray(general) ? general[0] : general });
+      }
+    },
+  });
+};
+
+return (
+  <form onSubmit={handleSubmit(onSubmit)}>
+    <input {...register("email")} placeholder="Email address" />
+    {errors.email && <p>{errors.email.message}</p>}
+
+    <input {...register("password")} type="password" placeholder="Password" />
+    {errors.password && <p>{errors.password.message}</p>}
+
+    {errors.root && <p>{errors.root.message}</p>}
+
+    <button type="submit" disabled={isSubmitting}>Sign Up</button>
+  </form>
+);
+```
+
+### Rules
+
+- Always validate on client (zod) AND the server validates independently
+- Inject API field errors via `setError("fieldName", { message })` — never store them in separate state
+- Use `errors.root` for non-field errors (general API errors, network failures)
+- Disable the submit button while `isSubmitting` or `isPending` to prevent double-submit
 
 ---
 

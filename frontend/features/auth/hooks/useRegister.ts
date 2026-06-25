@@ -6,12 +6,6 @@ import { register } from "../api";
 import type { AuthTokens, RegisterPayload } from "../types";
 
 export const useRegister = (): UseMutationResult<AuthTokens, Error, RegisterPayload> =>
-  useMutation({
-    mutationFn: register,
-    onSuccess: (data) => {
-      localStorage.setItem("access_token", data.access);
-      localStorage.setItem("refresh_token", data.refresh);
-    },
-  });
+  useMutation({ mutationFn: register });
 
 export default useRegister;
