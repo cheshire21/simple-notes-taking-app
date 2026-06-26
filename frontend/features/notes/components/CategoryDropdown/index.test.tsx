@@ -2,12 +2,13 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
-import CategoryDropdown from "@/components/CategoryDropdown";
 import type { Category } from "@/types";
 
+import CategoryDropdown from ".";
+
 const categories: Category[] = [
-  { id: "cat-1", name: "Work", color: "#e8855a" },
-  { id: "cat-2", name: "Personal", color: "#7fb5aa" },
+  { id: "cat-1", name: "Work", color: "#e8855a", created_at: "2026-01-01" },
+  { id: "cat-2", name: "Personal", color: "#7fb5aa", created_at: "2026-01-01" },
 ];
 
 describe("CategoryDropdown", () => {

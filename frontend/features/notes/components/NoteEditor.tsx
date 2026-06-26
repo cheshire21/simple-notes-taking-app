@@ -52,7 +52,7 @@ const NoteEditor = ({
         </span>
       )}
       {editor && (
-        <FloatingMenu editor={editor} tippyOptions={{ placement: "left", offset: [0, 8] }}>
+        <FloatingMenu editor={editor} options={{ placement: "left", offset: { mainAxis: 8 } }}>
           <div className="flex items-center gap-0.5 bg-cream/90 backdrop-blur-sm border border-brown/20 rounded-lg shadow-sm px-1 py-0.5">
             <Button
               type="button"

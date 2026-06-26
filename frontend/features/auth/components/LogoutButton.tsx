@@ -13,11 +13,12 @@ const LogoutButton = (): JSX.Element => {
   const { mutate, isPending } = useLogout();
 
   const handleLogout = (): void => {
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("refresh_token");
-    setToken(null);
-    router.push("/login");
-    mutate(undefined);
+    mutate(undefined, {
+      onSuccess: () => {
+        setToken(null);
+        router.push("/login");
+      },
+    });
   };
 
   return (

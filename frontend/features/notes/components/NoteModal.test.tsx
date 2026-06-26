@@ -32,7 +32,7 @@ describe("NoteModal", () => {
   it("renders title input, content textarea, save button, and close button", () => {
     render(<NoteModal onClose={() => {}} />, { wrapper: createWrapper() });
     expect(screen.getByPlaceholderText("Note Title")).toBeInTheDocument();
-    expect(screen.getByPlaceholderText("Pour your heart out...")).toBeInTheDocument();
+    expect(screen.getByText("Pour your heart out...")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /save note/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /close/i })).toBeInTheDocument();
   });

@@ -6,9 +6,9 @@ import { X } from "lucide-react";
 import type { JSX } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 
-import CategoryDropdown from "@/components/CategoryDropdown";
 import { Button } from "@/components/ui/button";
 import useCategories from "@/features/categories/hooks/useCategories";
+import CategoryDropdown from "@/features/notes/components/CategoryDropdown";
 import NoteEditor from "@/features/notes/components/NoteEditor";
 import useCreateNote from "@/features/notes/hooks/useCreateNote";
 import useDeleteNote from "@/features/notes/hooks/useDeleteNote";
