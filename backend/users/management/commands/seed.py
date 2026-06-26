@@ -3,7 +3,7 @@ from django.core.management.base import BaseCommand
 from categories.models import Category
 from users.models import User
 
-SEED_USER_EMAIL = "corenancco@gmail.com"
+SEED_USER_EMAIL = "coren@gmail.com"
 SEED_USER_PASSWORD = "Coren2197"
 
 SEED_CATEGORIES = [

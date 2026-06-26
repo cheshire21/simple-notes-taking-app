@@ -101,6 +101,13 @@ docker-compose exec notes-backend python manage.py migrate
 docker-compose exec notes-backend python manage.py seed
 ```
 
+This creates a default user and categories:
+
+| Field    | Value           |
+|----------|-----------------|
+| Email    | coren@gmail.com |
+| Password | Coren2197       |
+
 **6. (Optional) Create an admin user**
 
 ```bash
