@@ -17,5 +17,5 @@ class CategoryListCreateView(APIView):
     def post(self, request):
         serializer = CategoryInputSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        category = category_create(user=request.user, **serializer.validated_data)
+        category = category_create(**serializer.validated_data)
         return Response(CategoryOutputSerializer(category).data, status=status.HTTP_201_CREATED)
