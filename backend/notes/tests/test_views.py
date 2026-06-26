@@ -1,4 +1,7 @@
+import uuid
+
 from faker import Faker
+from rest_framework import status
 from rest_framework.test import APITestCase
 
 from categories.tests.factories import CategoryFactory
@@ -16,20 +19,20 @@ class TestNoteListCreateViewGet(APITestCase):
 
     def test_unauthenticated_returns_401(self):
         response = self.client.get(self.url)
-        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_returns_only_own_notes(self):
         NoteFactory(category=self.category)
         NoteFactory()
         self.client.force_authenticate(user=self.user)
         response = self.client.get(self.url)
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 1)
 
     def test_returns_empty_list_when_no_notes(self):
         self.client.force_authenticate(user=self.user)
         response = self.client.get(self.url)
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, [])
 
     def test_filters_by_category_id(self):
@@ -38,7 +41,7 @@ class TestNoteListCreateViewGet(APITestCase):
         NoteFactory(category=other_category)
         self.client.force_authenticate(user=self.user)
         response = self.client.get(self.url, {"category": str(self.category.id)})
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 1)
 
 
@@ -50,7 +53,7 @@ class TestNoteListCreateViewPost(APITestCase):
 
     def test_unauthenticated_returns_401(self):
         response = self.client.post(self.url, {"title": fake.sentence(), "category_id": str(self.category.id)})
-        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_creates_note_returns_201(self):
         self.client.force_authenticate(user=self.user)
@@ -60,19 +63,26 @@ class TestNoteListCreateViewPost(APITestCase):
             self.url,
             {"title": title, "content": content, "category_id": str(self.category.id)},
         )
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data["title"], title)
         self.assertEqual(response.data["category"]["id"], str(self.category.id))
 
     def test_missing_title_returns_400(self):
         self.client.force_authenticate(user=self.user)
         response = self.client.post(self.url, {"category_id": str(self.category.id)})
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("title", response.data)
+
+    def test_blank_title_returns_400(self):
+        self.client.force_authenticate(user=self.user)
+        response = self.client.post(self.url, {"title": "", "category_id": str(self.category.id)})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_missing_category_id_returns_400(self):
         self.client.force_authenticate(user=self.user)
         response = self.client.post(self.url, {"title": fake.sentence()})
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("category_id", response.data)
 
     def test_another_users_category_returns_400(self):
         self.client.force_authenticate(user=self.user)
@@ -81,7 +91,15 @@ class TestNoteListCreateViewPost(APITestCase):
             self.url,
             {"title": fake.sentence(), "category_id": str(other_category.id)},
         )
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_nonexistent_category_id_returns_400(self):
+        self.client.force_authenticate(user=self.user)
+        response = self.client.post(
+            self.url,
+            {"title": fake.sentence(), "category_id": str(uuid.uuid4())},
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
 
 class TestNoteDetailViewGet(APITestCase):
@@ -93,12 +111,12 @@ class TestNoteDetailViewGet(APITestCase):
 
     def test_unauthenticated_returns_401(self):
         response = self.client.get(self.url)
-        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_returns_own_note(self):
         self.client.force_authenticate(user=self.user)
         response = self.client.get(self.url)
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["id"], str(self.note.id))
         self.assertEqual(response.data["title"], self.note.title)
 
@@ -106,7 +124,12 @@ class TestNoteDetailViewGet(APITestCase):
         other_note = NoteFactory()
         self.client.force_authenticate(user=self.user)
         response = self.client.get(f"/api/notes/{other_note.id}/")
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_returns_404_for_nonexistent_uuid(self):
+        self.client.force_authenticate(user=self.user)
+        response = self.client.get(f"/api/notes/{uuid.uuid4()}/")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
 
 class TestNoteDetailViewPatch(APITestCase):
@@ -118,25 +141,37 @@ class TestNoteDetailViewPatch(APITestCase):
 
     def test_unauthenticated_returns_401(self):
         response = self.client.patch(self.url, {"title": "New Title"}, format="json")
-        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_updates_note_returns_200(self):
         self.client.force_authenticate(user=self.user)
         response = self.client.patch(self.url, {"title": "Updated Title"}, format="json")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["title"], "Updated Title")
 
     def test_returns_404_for_other_users_note(self):
         other_note = NoteFactory()
         self.client.force_authenticate(user=self.user)
         response = self.client.patch(f"/api/notes/{other_note.id}/", {"title": "X"}, format="json")
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_returns_404_for_nonexistent_uuid(self):
+        self.client.force_authenticate(user=self.user)
+        response = self.client.patch(f"/api/notes/{uuid.uuid4()}/", {"title": "X"}, format="json")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_returns_400_for_invalid_category(self):
         other_category = CategoryFactory()
         self.client.force_authenticate(user=self.user)
         response = self.client.patch(self.url, {"category_id": str(other_category.id)}, format="json")
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_updates_category_returns_200(self):
+        new_category = CategoryFactory(user=self.user)
+        self.client.force_authenticate(user=self.user)
+        response = self.client.patch(self.url, {"category_id": str(new_category.id)}, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["category"]["id"], str(new_category.id))
 
 
 class TestNoteDetailViewDelete(APITestCase):
@@ -148,22 +183,20 @@ class TestNoteDetailViewDelete(APITestCase):
 
     def test_unauthenticated_returns_401(self):
         response = self.client.delete(self.url)
-        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_returns_204_on_success(self):
         self.client.force_authenticate(user=self.user)
         response = self.client.delete(self.url)
-        self.assertEqual(response.status_code, 204)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
     def test_returns_404_for_other_users_note(self):
         other_note = NoteFactory()
         self.client.force_authenticate(user=self.user)
         response = self.client.delete(f"/api/notes/{other_note.id}/")
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_returns_404_for_nonexistent_note(self):
-        import uuid
-
         self.client.force_authenticate(user=self.user)
         response = self.client.delete(f"/api/notes/{uuid.uuid4()}/")
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)

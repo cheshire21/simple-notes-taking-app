@@ -98,3 +98,27 @@ npm run format        # Prettier
 npm run format:check  # Check formatting without writing
 npm run build         # Production build
 ```
+
+## Testing
+
+### Backend (requires Docker running)
+```bash
+docker exec notes-backend python manage.py test
+```
+
+With coverage:
+```bash
+docker exec notes-backend pip install coverage -q
+docker exec notes-backend coverage run --source=categories,notes,users manage.py test
+docker exec notes-backend coverage report
+```
+
+### Frontend (requires Docker running)
+```bash
+docker exec notes-frontend npm run test -- --run
+```
+
+With coverage:
+```bash
+docker exec notes-frontend npm run test -- --run --coverage
+```

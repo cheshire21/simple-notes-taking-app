@@ -60,6 +60,14 @@ class TestCategoryListCreateViewPost(APITestCase):
         self.assertIn("color", response.data)
         self.assertIn("created_at", response.data)
 
+    def test_duplicate_name_same_user_returns_400(self):
+        self.client.force_authenticate(user=self.user)
+        name = fake.word()
+        self.client.post(self.url, {"name": name})
+        response = self.client.post(self.url, {"name": name})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("name", response.data)
+
 
 class TestCategoryDetailViewDelete(APITestCase):
     def setUp(self):
