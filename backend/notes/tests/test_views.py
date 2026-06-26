@@ -2,9 +2,44 @@ from faker import Faker
 from rest_framework.test import APITestCase
 
 from categories.tests.factories import CategoryFactory
+from notes.tests.factories import NoteFactory
 from users.tests.factories import UserFactory
 
 fake = Faker()
+
+
+class TestNoteListCreateViewGet(APITestCase):
+    def setUp(self):
+        self.user = UserFactory()
+        self.category = CategoryFactory(user=self.user)
+        self.url = "/api/notes/"
+
+    def test_unauthenticated_returns_401(self):
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 401)
+
+    def test_returns_only_own_notes(self):
+        NoteFactory(category=self.category)
+        NoteFactory()
+        self.client.force_authenticate(user=self.user)
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data), 1)
+
+    def test_returns_empty_list_when_no_notes(self):
+        self.client.force_authenticate(user=self.user)
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data, [])
+
+    def test_filters_by_category_id(self):
+        other_category = CategoryFactory(user=self.user)
+        NoteFactory(category=self.category)
+        NoteFactory(category=other_category)
+        self.client.force_authenticate(user=self.user)
+        response = self.client.get(self.url, {"category": str(self.category.id)})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data), 1)
 
 
 class TestNoteListCreateViewPost(APITestCase):

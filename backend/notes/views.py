@@ -8,12 +8,19 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from notes.selectors import note_list
 from notes.serializers import NoteInputSerializer, NoteOutputSerializer
 from notes.services import note_create
 
 
 class NoteListCreateView(APIView):
     permission_classes: ClassVar = [IsAuthenticated]
+
+    @extend_schema(responses={200: NoteOutputSerializer(many=True)})
+    def get(self, request):
+        category_id = request.query_params.get("category")
+        notes = note_list(user=request.user, category_id=category_id)
+        return Response(NoteOutputSerializer(notes, many=True).data)
 
     @extend_schema(request=NoteInputSerializer, responses={201: NoteOutputSerializer})
     def post(self, request):
