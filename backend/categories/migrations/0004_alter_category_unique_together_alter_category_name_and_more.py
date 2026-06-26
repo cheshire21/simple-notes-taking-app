@@ -5,7 +5,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies: ClassVar = [
         ("categories", "0003_alter_category_unique_together"),
     ]
