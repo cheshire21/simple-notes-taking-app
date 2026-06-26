@@ -8,9 +8,10 @@ interface CategoryItemProps {
   category: Category;
   isActive: boolean;
   onClick: () => void;
+  count?: number;
 }
 
-const CategoryItem = ({ category, isActive, onClick }: CategoryItemProps): JSX.Element => (
+const CategoryItem = ({ category, isActive, onClick, count }: CategoryItemProps): JSX.Element => (
   <li>
     <button
       type="button"
@@ -22,6 +23,7 @@ const CategoryItem = ({ category, isActive, onClick }: CategoryItemProps): JSX.E
         style={{ backgroundColor: category.color }}
       />
       <span className="text-xs text-black">{category.name}</span>
+      {count !== undefined && <span className="ml-auto text-xs text-black">{count}</span>}
     </button>
   </li>
 );

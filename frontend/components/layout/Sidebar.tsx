@@ -11,21 +11,21 @@ import useCategories from "@/features/categories/hooks/useCategories";
 interface SidebarProps {
   activeCategory: string | null;
   setActiveCategory: (id: string | null) => void;
+  noteCounts: Record<string, number>;
 }
 
-const Sidebar = ({ activeCategory, setActiveCategory }: SidebarProps): JSX.Element => {
+const Sidebar = ({ activeCategory, setActiveCategory, noteCounts }: SidebarProps): JSX.Element => {
   const [isAdding, setIsAdding] = useState(false);
   const { data: categories = [], isLoading, isError } = useCategories();
 
   return (
-    <aside className="hidden md:flex w-52 flex-col pt-8 px-6">
-      <p className="text-xs font-bold text-black mb-3">All Categories</p>
+    <aside className="hidden md:flex w-64 flex-col pt-8 px-6">
       <button
         type="button"
         onClick={() => setActiveCategory(null)}
         className={`text-xs text-black text-left mb-2 ${activeCategory === null ? "font-bold" : "font-normal"}`}
       >
-        All Notes
+        All Categories
       </button>
       {isLoading && <p className="text-xs text-brown/40">Loading…</p>}
       {isError && <p className="text-xs text-red-400">Failed to load categories.</p>}
@@ -37,6 +37,7 @@ const Sidebar = ({ activeCategory, setActiveCategory }: SidebarProps): JSX.Eleme
               category={cat}
               isActive={activeCategory === cat.id}
               onClick={() => setActiveCategory(cat.id)}
+              count={noteCounts[cat.id] ?? 0}
             />
           ))}
         </ul>

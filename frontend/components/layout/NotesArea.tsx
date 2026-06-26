@@ -14,8 +14,49 @@ interface NotesAreaProps {
 }
 
 const NotesArea = ({ activeCategory }: NotesAreaProps): JSX.Element => {
-  const { data: notes = [] } = useNotes(activeCategory);
+  const { data: notes = [], isLoading, isError } = useNotes(activeCategory);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const renderContent = (): JSX.Element => {
+    if (isLoading) {
+      return (
+        <div className="flex flex-1 items-center justify-center">
+          <p className="text-xs text-brown/40">Loading…</p>
+        </div>
+      );
+    }
+    if (isError) {
+      return (
+        <div className="flex flex-1 items-center justify-center">
+          <p className="text-xs text-red-400">Failed to load notes.</p>
+        </div>
+      );
+    }
+    if (notes.length > 0) {
+      return (
+        <div className="flex-1 overflow-y-auto px-6 pb-6">
+          <div className="grid grid-cols-3 gap-4">
+            {notes.map((note) => (
+              <NoteCard
+                key={note.id}
+                note={note}
+                categoryColor={note.category.color}
+                onClick={() => {}}
+              />
+            ))}
+          </div>
+        </div>
+      );
+    }
+    return (
+      <div className="flex flex-1 flex-col items-center justify-center gap-4 pb-16">
+        <Image src="/boba-empty.png" alt="No notes yet" width={297} height={297} />
+        <p className="text-brown font-sans font-normal text-2xl text-center">
+          I&apos;m just here waiting for your charming notes...
+        </p>
+      </div>
+    );
+  };
 
   return (
     <div className="flex flex-1 flex-col">
@@ -28,27 +69,7 @@ const NotesArea = ({ activeCategory }: NotesAreaProps): JSX.Element => {
           + New Note
         </Button>
       </div>
-      {notes.length > 0 ? (
-        <div className="flex-1 overflow-y-auto px-6 pb-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {notes.map((note) => (
-              <NoteCard
-                key={note.id}
-                note={note}
-                categoryColor={note.category?.color ?? "#94a3b8"}
-                onClick={() => {}}
-              />
-            ))}
-          </div>
-        </div>
-      ) : (
-        <div className="flex flex-1 flex-col items-center justify-center gap-4 pb-16">
-          <Image src="/boba-empty.png" alt="No notes yet" width={297} height={297} />
-          <p className="text-brown font-sans font-normal text-2xl text-center">
-            I&apos;m just here waiting for your charming notes...
-          </p>
-        </div>
-      )}
+      {renderContent()}
       {isModalOpen && <NoteModal onClose={() => setIsModalOpen(false)} />}
     </div>
   );
