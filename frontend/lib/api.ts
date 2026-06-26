@@ -30,6 +30,7 @@ api.interceptors.response.use(
           { refresh },
         );
         localStorage.setItem("access_token", data.access);
+        if (data.refresh) localStorage.setItem("refresh_token", data.refresh);
         const retryConfig = { ...original, headers: { Authorization: `Bearer ${data.access}` } };
         return await api(retryConfig);
       } catch {
