@@ -2,9 +2,11 @@
 
 import Image from "next/image";
 import type { JSX } from "react";
+import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import NoteCard from "@/components/ui/NoteCard";
+import NoteModal from "@/features/notes/components/NoteModal";
 import useNotes from "@/features/notes/hooks/useNotes";
 
 interface NotesAreaProps {
@@ -13,11 +15,16 @@ interface NotesAreaProps {
 
 const NotesArea = ({ activeCategory }: NotesAreaProps): JSX.Element => {
   const { data: notes = [] } = useNotes(activeCategory);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   return (
     <div className="flex flex-1 flex-col">
       <div className="flex justify-end p-6">
-        <Button variant="outline" className="rounded-full gap-1.5">
+        <Button
+          variant="outline"
+          className="rounded-full gap-1.5"
+          onClick={() => setIsModalOpen(true)}
+        >
           + New Note
         </Button>
       </div>
@@ -42,6 +49,7 @@ const NotesArea = ({ activeCategory }: NotesAreaProps): JSX.Element => {
           </p>
         </div>
       )}
+      {isModalOpen && <NoteModal onClose={() => setIsModalOpen(false)} />}
     </div>
   );
 };

@@ -8,3 +8,9 @@ export interface Note {
   created_at: string;
   updated_at: string;
 }
+
+export interface CreateNotePayload {
+  title: string;
+  content: string;
+  category_id: string;
+}
