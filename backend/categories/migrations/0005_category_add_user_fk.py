@@ -1,5 +1,4 @@
 # Generated manually — re-adds user FK and unique_together after global-category experiment
-import uuid
 from typing import ClassVar
 
 import django.db.models.deletion
@@ -14,6 +13,8 @@ class Migration(migrations.Migration):
     ]
 
     operations: ClassVar = [
+        # Clear existing rows — they have no user and cannot be assigned one safely
+        migrations.RunSQL("DELETE FROM categories_category;", migrations.RunSQL.noop),
         migrations.AlterField(
             model_name="category",
             name="name",
@@ -23,12 +24,10 @@ class Migration(migrations.Migration):
             model_name="category",
             name="user",
             field=models.ForeignKey(
-                default=uuid.UUID("00000000-0000-0000-0000-000000000000"),
                 on_delete=django.db.models.deletion.CASCADE,
                 related_name="categories",
                 to=settings.AUTH_USER_MODEL,
             ),
-            preserve_default=False,
         ),
         migrations.AlterUniqueTogether(
             name="category",

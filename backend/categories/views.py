@@ -1,7 +1,9 @@
 from typing import ClassVar
 
+from django.core.exceptions import ValidationError as DjangoValidationError
 from drf_spectacular.utils import extend_schema
 from rest_framework import status
+from rest_framework.exceptions import ValidationError as DRFValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -23,5 +25,8 @@ class CategoryListCreateView(APIView):
     def post(self, request):
         serializer = CategoryInputSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        category = category_create(user=request.user, **serializer.validated_data)
+        try:
+            category = category_create(user=request.user, **serializer.validated_data)
+        except DjangoValidationError as exc:
+            raise DRFValidationError({"name": ["A category with this name already exists."]}) from exc
         return Response(CategoryOutputSerializer(category).data, status=status.HTTP_201_CREATED)
