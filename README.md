@@ -190,3 +190,33 @@ With coverage:
 ```bash
 docker exec notes-frontend npm run test -- --run --coverage
 ```
+
+## Test Coverage Summary
+
+### Frontend — 84.57% statements · 82 tests · 15 test files
+
+| Area | Stmts | Branches | Notes |
+|---|---|---|---|
+| `features/auth` (api, hooks, schemas) | 100% | 100% | |
+| `features/auth/components` | 100% | 89% | |
+| `components/PasswordInput` | 100% | 100% | |
+| `features/notes/components/CategoryDropdown` | 100% | 100% | |
+| `components/ui` (Skeleton, button, input) | 100% | 100% | |
+| `features/categories/hooks` | 91% | 100% | |
+| `features/categories/components` | 91% | 75% | |
+| `components/NoteCard` | 88% | 81% | |
+| `features/notes/components` | 82% | 77% | |
+| `features/notes/hooks` | 81% | 100% | |
+| `lib` | 83% | 81% | |
+| `components/layout` | 72% | 81% | |
+| `features/auth/context` | 32% | 0% | `useSyncExternalStore` not easily testable in jsdom |
+
+### Backend — 97% statements · 91 tests
+
+| Module | Cover | Notes |
+|---|---|---|
+| `categories` (models, selectors, services, serializers, views) | 93–100% | |
+| `notes` (models, selectors, services, serializers, views) | 93–100% | |
+| `users` (selectors, services, serializers, views) | 100% | |
+| `users/models.py` | 56% | Custom user model manager methods not fully exercised |
+| `users/management/commands/seed.py` | 0% | Dev-only, not tested |
