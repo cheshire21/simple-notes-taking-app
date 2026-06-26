@@ -9,11 +9,17 @@ backend:
     description: One class per view, descriptive method names, 4 required test categories, factories over fixtures
 
 frontend:
+  auth-flow:
+    description: AuthProvider (useSyncExternalStore), AuthGuard two-layer pattern, why useRegister must not store tokens
   auth-tokens:
     description: JWT in localStorage, axios interceptor for silent refresh, retried flag, redirect on failure
   code-style:
-    description: Arrow functions only, double quotes, explicit TypeScript return types, no function declarations, Tailwind + shadcn styling rules
+    description: Arrow functions only, double quotes, explicit TypeScript return types, Tailwind + shadcn styling rules
   feature-structure:
     description: Feature-based folder layout with schemas/ per feature, thin pages, check globals.css + components/ui/ first, dependency rules
   forms:
     description: react-hook-form + zod mandatory, schemas in features/<feature>/schemas/, shadcn Form components, setError for API errors
+  testing:
+    description: Vitest + MSW setup, localStorage polyfill, Next.js mocks per test file, hook wrapper pattern, query priority
+  ui-components:
+    description: shadcn/ui as component library, component-as-folder pattern, custom SVG icons as separate tsx files
