@@ -71,7 +71,7 @@ describe("LoginForm", () => {
     const user = userEvent.setup();
 
     server.use(
-      http.post("http://localhost:8000/api/auth/token/", () =>
+      http.post("http://localhost:8000/api/auth/login/", () =>
         HttpResponse.json(
           {
             email: ["No active account found with the given credentials."],
@@ -100,7 +100,7 @@ describe("LoginForm", () => {
     const user = userEvent.setup();
 
     server.use(
-      http.post("http://localhost:8000/api/auth/token/", () =>
+      http.post("http://localhost:8000/api/auth/login/", () =>
         HttpResponse.json({ detail: "An unexpected error occurred." }, { status: 500 }),
       ),
     );
@@ -120,7 +120,7 @@ describe("LoginForm", () => {
     const user = userEvent.setup();
 
     server.use(
-      http.post("http://localhost:8000/api/auth/token/", async () => {
+      http.post("http://localhost:8000/api/auth/login/", async () => {
         await delay("infinite");
         return HttpResponse.json({});
       }),
@@ -139,7 +139,7 @@ describe("LoginForm", () => {
     const user = userEvent.setup();
 
     server.use(
-      http.post("http://localhost:8000/api/auth/token/", () =>
+      http.post("http://localhost:8000/api/auth/login/", () =>
         HttpResponse.json({ access: "access-token", refresh: "refresh-token" }, { status: 200 }),
       ),
     );

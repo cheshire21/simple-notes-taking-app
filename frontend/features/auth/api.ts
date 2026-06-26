@@ -3,7 +3,7 @@ import api from "@/lib/api";
 import type { AuthTokens, LoginPayload, RegisterPayload } from "./types";
 
 export const login = async (payload: LoginPayload): Promise<AuthTokens> => {
-  const res = await api.post<AuthTokens>("/api/auth/token/", payload);
+  const res = await api.post<AuthTokens>("/api/auth/login/", payload);
   return res.data;
 };
 

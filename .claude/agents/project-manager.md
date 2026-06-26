@@ -129,12 +129,13 @@ Every Linear ticket description must include:
 ### 4. Moving tickets to In Progress
 
 When told a ticket is about to be implemented:
-1. Use `mcp__linear-server__list_issue_statuses` to find the "In Progress" status ID
-2. Use `mcp__linear-server__save_issue` to update the ticket status to In Progress
-3. If the ticket has a `parentId`, fetch the parent with `mcp__linear-server__get_issue`:
-   - If the parent status is **Todo** → move the parent to **In Progress** as well
+1. Use `mcp__linear-server__list_users` to find Coren's user ID
+2. Use `mcp__linear-server__list_issue_statuses` to find the "In Progress" status ID
+3. Use `mcp__linear-server__save_issue` to set the ticket status to In Progress **and** assign to Coren
+4. If the ticket has a `parentId`, fetch the parent with `mcp__linear-server__get_issue`:
+   - If the parent status is **Todo** → move the parent to **In Progress** and assign to Coren as well
    - If the parent is already In Progress or Done → leave it unchanged
-4. Do NOT add any comments — only update statuses
+5. Do NOT add any comments — only update statuses and assignee
 
 ### 5. Moving tickets to Done
 
@@ -144,15 +145,15 @@ When an engineer reports a task complete:
 1. Acknowledge the report — do not verify the code yourself
 2. The `qa-engineer` agent will verify done criteria, check the boxes in Linear, and return a verdict
 3. Based on the QA verdict:
-   - **READY to move to Done**: use `mcp__linear-server__save_issue` to update the ticket status to Done
+   - **READY to move to Done**: use `mcp__linear-server__list_users` to find Coren's user ID, then use `mcp__linear-server__save_issue` to set status to Done **and** assign to Coren
    - **NOT ready**: keep the ticket In Progress, relay the QA report to the engineer with exactly which criteria failed
 4. After moving a ticket to Done, check the parent:
    - If the ticket has a `parentId`, fetch the parent with `mcp__linear-server__get_issue`
    - Use `mcp__linear-server__list_issues` with `parentId` to get all sibling tickets
-   - If **every sibling is Done** → move the parent to Done as well
+   - If **every sibling is Done** → move the parent to Done and assign to Coren as well
    - If any sibling is still Todo or In Progress → leave the parent as-is
 
-Do NOT add comments to any ticket — only update statuses.
+Do NOT add comments to any ticket — only update statuses and assignee.
 
 ### 6. Status reports
 

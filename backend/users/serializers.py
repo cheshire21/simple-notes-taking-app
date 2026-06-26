@@ -10,6 +10,10 @@ class UserRegisterInputSerializer(serializers.Serializer):
     password = serializers.CharField(write_only=True)
 
 
+class LogoutInputSerializer(serializers.Serializer):
+    refresh = serializers.CharField()
+
+
 class UserOutputSerializer(serializers.ModelSerializer):
     id = serializers.UUIDField(read_only=True)
     email = serializers.EmailField(read_only=True)

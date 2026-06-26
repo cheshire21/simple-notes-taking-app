@@ -1,3 +1,5 @@
+from rest_framework_simplejwt.tokens import RefreshToken
+
 from users.models import User
 
 
@@ -7,3 +9,8 @@ def user_register(*, email: str, password: str) -> User:
     user.full_clean()  # validates email format + uniqueness
     user.save()
     return user
+
+
+def user_logout(*, refresh_token: str) -> None:
+    token = RefreshToken(refresh_token)
+    token.blacklist()

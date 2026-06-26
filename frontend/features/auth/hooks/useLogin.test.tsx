@@ -33,7 +33,7 @@ afterAll(() => server.close());
 describe("useLogin", () => {
   it("writes tokens to localStorage and resolves with AuthTokens on success", async () => {
     server.use(
-      http.post("http://localhost:8000/api/auth/token/", () =>
+      http.post("http://localhost:8000/api/auth/login/", () =>
         HttpResponse.json({ access: "access-token", refresh: "refresh-token" }, { status: 200 }),
       ),
     );
@@ -56,7 +56,7 @@ describe("useLogin", () => {
     const errorBody = { detail: "No active account found with the given credentials" };
 
     server.use(
-      http.post("http://localhost:8000/api/auth/token/", () =>
+      http.post("http://localhost:8000/api/auth/login/", () =>
         HttpResponse.json(errorBody, { status: 401 }),
       ),
     );
