@@ -1,5 +1,6 @@
 "use client";
 
+import { Plus } from "lucide-react";
 import { useState } from "react";
 import type { JSX } from "react";
 
@@ -51,9 +52,10 @@ const Sidebar = ({ activeCategory, setActiveCategory, noteCounts }: SidebarProps
         <button
           type="button"
           onClick={() => setIsAdding(true)}
-          className="mt-3 text-xs font-bold text-black text-left"
+          className="mt-3 text-xs font-bold text-black text-left flex items-center gap-1"
         >
-          + Add Category
+          <Plus size={16} />
+          Add Category
         </button>
       )}
       <div className="mt-auto mb-6">

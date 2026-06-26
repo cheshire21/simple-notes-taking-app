@@ -1,5 +1,6 @@
 "use client";
 
+import { Plus } from "lucide-react";
 import Image from "next/image";
 import type { JSX } from "react";
 import { useState } from "react";
@@ -63,16 +64,18 @@ const NotesArea = ({ activeCategory }: NotesAreaProps): JSX.Element => {
   return (
     <div className="flex flex-1 flex-col">
       <div className="flex justify-end p-6">
-        <Button
-          variant="outline"
-          className="rounded-full gap-1.5"
-          onClick={() => setIsModalOpen(true)}
-        >
-          + New Note
+        <Button variant="outline" className="gap-1.5" onClick={() => setIsModalOpen(true)}>
+          <Plus size={16} />
+          New Note
         </Button>
       </div>
       {renderContent()}
-      {isModalOpen && <NoteModal onClose={() => setIsModalOpen(false)} defaultCategoryId={activeCategory ?? undefined} />}
+      {isModalOpen && (
+        <NoteModal
+          onClose={() => setIsModalOpen(false)}
+          defaultCategoryId={activeCategory ?? undefined}
+        />
+      )}
       {editingNote && <NoteModal note={editingNote} onClose={() => setEditingNote(null)} />}
     </div>
   );

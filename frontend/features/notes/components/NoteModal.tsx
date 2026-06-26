@@ -9,7 +9,9 @@ import { Controller, useForm, useWatch } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import CategoryDropdown from "@/components/ui/CategoryDropdown";
 import useCategories from "@/features/categories/hooks/useCategories";
+import NoteEditor from "@/features/notes/components/NoteEditor";
 import useCreateNote from "@/features/notes/hooks/useCreateNote";
+import useDeleteNote from "@/features/notes/hooks/useDeleteNote";
 import useUpdateNote from "@/features/notes/hooks/useUpdateNote";
 import {
   createNoteSchema,
@@ -28,6 +30,7 @@ const NoteModal = ({ onClose, note, defaultCategoryId }: NoteModalProps): JSX.El
   const { data: categories = [] } = useCategories();
   const { mutate: createMutate, isPending: createPending } = useCreateNote();
   const { mutate: updateMutate, isPending: updatePending } = useUpdateNote();
+  const { mutate: deleteMutate, isPending: deletePending } = useDeleteNote();
   const isPending = note ? updatePending : createPending;
 
   const {
@@ -108,7 +111,7 @@ const NoteModal = ({ onClose, note, defaultCategoryId }: NoteModalProps): JSX.El
         }}
       >
         {/* Last edited */}
-        <p className="text-xs text-black/50 text-right">
+        <p className="text-xs text-black text-right">
           {note
             ? `Last Edited: ${new Date(note.updated_at).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })} at ${new Date(note.updated_at).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true }).toLowerCase()}`
             : "Last Edited: Today"}
@@ -118,24 +121,35 @@ const NoteModal = ({ onClose, note, defaultCategoryId }: NoteModalProps): JSX.El
         <input
           {...register("title")}
           placeholder="Note Title"
-          className="text-[24px] leading-none font-bold text-black bg-transparent outline-none placeholder:text-black/40"
+          className="text-[24px] leading-none font-bold text-black bg-transparent outline-none placeholder:text-black"
           style={{ fontFamily: "var(--font-inria-serif)" }}
         />
         {errors.title && <p className="text-xs text-red-500">{errors.title.message}</p>}
 
         {/* Content */}
-        <textarea
-          {...register("content")}
-          placeholder="Pour your heart out..."
-          className="flex-1 resize-none text-base text-black bg-transparent outline-none placeholder:text-black/50"
+        <Controller
+          control={control}
+          name="content"
+          render={({ field }) => <NoteEditor value={field.value} onChange={field.onChange} />}
         />
 
         {/* Save button */}
-        <div className="flex justify-end">
+        <div className="flex justify-between items-center">
+          {note && (
+            <Button
+              type="button"
+              variant="ghost"
+              className="text-red-500 hover:text-red-600 hover:bg-red-50"
+              disabled={deletePending}
+              onClick={() => deleteMutate(note.id, { onSuccess: onClose })}
+            >
+              {deletePending ? "Deleting…" : "Delete"}
+            </Button>
+          )}
           <Button
             type="submit"
             variant="outline"
-            className="rounded-full bg-transparent border-brown/40 text-black hover:bg-black/10"
+            className="bg-transparent border-brown/40 text-black hover:bg-black/10"
             disabled={isPending}
           >
             {isPending ? "Saving…" : "Save Note"}

@@ -49,7 +49,7 @@ const CategoryDropdown = ({
     <div ref={wrapperRef} className={`relative inline-block ${className}`}>
       <button
         type="button"
-        className="border border-brown/40 rounded-xl px-4 py-3 flex items-center justify-between gap-3 font-linter text-sm text-brown cursor-pointer w-[225px]"
+        className="border border-brown/40 rounded-xl px-4 py-3 flex items-center justify-between gap-3 font-linter text-sm text-black cursor-pointer w-[225px]"
         onClick={handleTriggerClick}
       >
         <div className="flex items-center gap-2">
@@ -70,7 +70,7 @@ const CategoryDropdown = ({
             <button
               key={category.id}
               type="button"
-              className="px-4 py-2.5 hover:bg-brown/5 cursor-pointer flex items-center gap-2 font-linter text-sm text-brown w-full text-left whitespace-nowrap"
+              className="px-4 py-2.5 hover:bg-brown/5 cursor-pointer flex items-center gap-2 font-linter text-sm text-black w-full text-left whitespace-nowrap"
               onClick={() => handleOptionClick(category)}
             >
               <span

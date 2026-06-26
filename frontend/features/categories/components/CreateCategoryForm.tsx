@@ -77,7 +77,7 @@ const CreateCategoryForm = ({ onSuccess, onCancel }: CreateCategoryFormProps): J
           size="icon-xs"
           disabled={isPending}
           aria-label="Add category"
-          className="rounded-full bg-brown text-cream hover:opacity-80 border-0"
+          className="bg-brown text-cream hover:opacity-80 border-0"
         >
           <Check size={8} strokeWidth={3} />
         </Button>
@@ -88,7 +88,7 @@ const CreateCategoryForm = ({ onSuccess, onCancel }: CreateCategoryFormProps): J
           variant="ghost"
           onClick={onCancel}
           aria-label="Cancel"
-          className="rounded-full text-brown/50 hover:text-brown hover:bg-transparent "
+          className="text-brown/50 hover:text-brown hover:bg-transparent"
         >
           <X size={8} strokeWidth={2.5} />
         </Button>

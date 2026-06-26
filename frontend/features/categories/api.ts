@@ -12,3 +12,7 @@ const createCategory = async (payload: CreateCategoryPayload): Promise<Category>
 };
 
 export default createCategory;
+
+export const deleteCategory = async (id: string): Promise<void> => {
+  await api.delete(`/api/categories/${id}/`);
+};

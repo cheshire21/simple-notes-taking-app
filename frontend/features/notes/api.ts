@@ -17,4 +17,8 @@ export const updateNote = async (id: string, payload: UpdateNotePayload): Promis
   return res.data;
 };
 
+export const deleteNote = async (id: string): Promise<void> => {
+  await api.delete(`/api/notes/${id}/`);
+};
+
 export default listNotes;
