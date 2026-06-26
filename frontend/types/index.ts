@@ -11,16 +11,16 @@ export interface PaginatedResponse<T> {
 }
 
 export interface Category {
-  id: number;
+  id: string;
   name: string;
   color: string;
 }
 
 export interface Note {
-  id: number;
+  id: string;
   title: string;
   content: string;
-  category: Category;
+  category: Category | null;
   created_at: string;
   updated_at: string;
 }

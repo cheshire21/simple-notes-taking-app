@@ -10,14 +10,14 @@ import NoteCard from "@/components/ui/NoteCard";
 import type { Category, Note } from "@/types";
 
 const categories: Category[] = [
-  { id: 1, name: "Random Thoughts", color: "#E8855A" },
-  { id: 2, name: "Personal", color: "#7FB5AA" },
-  { id: 3, name: "School", color: "#F5D98B" },
-  { id: 4, name: "Drama", color: "#B5BF8F" },
+  { id: "1", name: "Random Thoughts", color: "#E8855A" },
+  { id: "2", name: "Personal", color: "#7FB5AA" },
+  { id: "3", name: "School", color: "#F5D98B" },
+  { id: "4", name: "Drama", color: "#B5BF8F" },
 ];
 
 const sampleNote: Note = {
-  id: 1,
+  id: "1",
   title: "Note Title",
   content:
     "Note content preview that gets truncated after approximately three lines of text so you can see how the line-clamp works in practice.",

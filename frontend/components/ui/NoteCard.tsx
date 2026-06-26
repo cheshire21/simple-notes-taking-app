@@ -39,7 +39,7 @@ const NoteCard = ({
     >
       <div className="note-meta flex items-center gap-2 mb-3">
         <span className="font-bold">{formattedDate}</span>
-        <span>{note.category.name}</span>
+        {note.category && <span>{note.category.name}</span>}
       </div>
       <div className="note-title mt-1 mb-2">{note.title}</div>
       <div className="note-body line-clamp-3">{note.content}</div>

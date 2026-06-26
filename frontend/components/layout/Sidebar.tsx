@@ -4,25 +4,40 @@ import { useState } from "react";
 import type { JSX } from "react";
 
 import LogoutButton from "@/features/auth/components/LogoutButton";
+import CategoryItem from "@/features/categories/components/CategoryItem";
 import CreateCategoryForm from "@/features/categories/components/CreateCategoryForm";
 import useCategories from "@/features/categories/hooks/useCategories";
 
-const Sidebar = (): JSX.Element => {
+interface SidebarProps {
+  activeCategory: string | null;
+  setActiveCategory: (id: string | null) => void;
+}
+
+const Sidebar = ({ activeCategory, setActiveCategory }: SidebarProps): JSX.Element => {
   const [isAdding, setIsAdding] = useState(false);
   const { data: categories = [], isLoading, isError } = useCategories();
 
   return (
     <aside className="hidden md:flex w-52 flex-col pt-8 px-6">
       <p className="text-xs font-bold text-black mb-3">All Categories</p>
+      <button
+        type="button"
+        onClick={() => setActiveCategory(null)}
+        className={`text-xs text-black text-left mb-2 ${activeCategory === null ? "font-bold" : "font-normal"}`}
+      >
+        All Notes
+      </button>
       {isLoading && <p className="text-xs text-brown/40">Loading…</p>}
       {isError && <p className="text-xs text-red-400">Failed to load categories.</p>}
       {!isLoading && !isError && (
         <ul className="flex flex-col gap-2">
           {categories.map((cat) => (
-            <li key={cat.id} className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: cat.color }} />
-              <span className="text-xs font-normal text-black">{cat.name}</span>
-            </li>
+            <CategoryItem
+              key={cat.id}
+              category={cat}
+              isActive={activeCategory === cat.id}
+              onClick={() => setActiveCategory(cat.id)}
+            />
           ))}
         </ul>
       )}
