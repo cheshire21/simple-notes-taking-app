@@ -8,7 +8,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from notes.selectors import note_list
+from notes.selectors import note_get, note_list
 from notes.serializers import NoteInputSerializer, NoteOutputSerializer
 from notes.services import note_create
 
@@ -31,3 +31,12 @@ class NoteListCreateView(APIView):
         except DjangoValidationError as exc:
             raise DRFValidationError(exc.message_dict) from exc
         return Response(NoteOutputSerializer(note).data, status=status.HTTP_201_CREATED)
+
+
+class NoteDetailView(APIView):
+    permission_classes: ClassVar = [IsAuthenticated]
+
+    @extend_schema(responses={200: NoteOutputSerializer})
+    def get(self, request, pk):
+        note = note_get(id=pk, user=request.user)
+        return Response(NoteOutputSerializer(note).data)

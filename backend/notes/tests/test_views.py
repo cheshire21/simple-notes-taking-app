@@ -82,3 +82,28 @@ class TestNoteListCreateViewPost(APITestCase):
             {"title": fake.sentence(), "category_id": str(other_category.id)},
         )
         self.assertEqual(response.status_code, 400)
+
+
+class TestNoteDetailViewGet(APITestCase):
+    def setUp(self):
+        self.user = UserFactory()
+        self.category = CategoryFactory(user=self.user)
+        self.note = NoteFactory(category=self.category)
+        self.url = f"/api/notes/{self.note.id}/"
+
+    def test_unauthenticated_returns_401(self):
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 401)
+
+    def test_returns_own_note(self):
+        self.client.force_authenticate(user=self.user)
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["id"], str(self.note.id))
+        self.assertEqual(response.data["title"], self.note.title)
+
+    def test_returns_404_for_other_users_note(self):
+        other_note = NoteFactory()
+        self.client.force_authenticate(user=self.user)
+        response = self.client.get(f"/api/notes/{other_note.id}/")
+        self.assertEqual(response.status_code, 404)
