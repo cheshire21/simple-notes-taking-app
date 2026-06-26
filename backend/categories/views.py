@@ -10,7 +10,7 @@ from rest_framework.views import APIView
 
 from categories.selectors import category_list
 from categories.serializers import CategoryInputSerializer, CategoryOutputSerializer
-from categories.services import category_create
+from categories.services import category_create, category_delete
 
 
 class CategoryListCreateView(APIView):
@@ -30,3 +30,11 @@ class CategoryListCreateView(APIView):
         except DjangoValidationError as exc:
             raise DRFValidationError({"name": ["A category with this name already exists."]}) from exc
         return Response(CategoryOutputSerializer(category).data, status=status.HTTP_201_CREATED)
+
+
+class CategoryDetailView(APIView):
+    permission_classes: ClassVar = [IsAuthenticated]
+
+    def delete(self, request, pk):
+        category_delete(category_id=pk, user=request.user)
+        return Response(status=status.HTTP_204_NO_CONTENT)

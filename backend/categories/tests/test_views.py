@@ -1,3 +1,5 @@
+import uuid
+
 from faker import Faker
 from rest_framework import status
 from rest_framework.test import APITestCase
@@ -57,3 +59,31 @@ class TestCategoryListCreateViewPost(APITestCase):
         self.assertIn("id", response.data)
         self.assertIn("color", response.data)
         self.assertIn("created_at", response.data)
+
+
+class TestCategoryDetailViewDelete(APITestCase):
+    def setUp(self):
+        self.user = UserFactory()
+        self.category = CategoryFactory(user=self.user)
+        self.url = f"/api/categories/{self.category.id}/"
+
+    def test_returns_204_on_success(self):
+        self.client.force_authenticate(user=self.user)
+        response = self.client.delete(self.url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+    def test_unauthenticated_returns_401(self):
+        response = self.client.delete(self.url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_returns_404_for_another_users_category(self):
+        other_user = UserFactory()
+        self.client.force_authenticate(user=other_user)
+        response = self.client.delete(self.url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_returns_404_for_nonexistent_uuid(self):
+        self.client.force_authenticate(user=self.user)
+        url = f"/api/categories/{uuid.uuid4()}/"
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
