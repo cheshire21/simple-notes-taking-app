@@ -65,7 +65,8 @@ describe("CategoryDropdown", () => {
         <button type="button">Outside</button>
       </div>,
     );
-    await user.click(screen.getByText("▾").closest("button")!);
+    const triggerButton = screen.getByRole("button", { name: "Category" });
+    await user.click(triggerButton);
     expect(screen.getByText("Personal")).toBeInTheDocument();
     await user.click(screen.getByText("Outside"));
     expect(screen.queryByText("Personal")).not.toBeInTheDocument();

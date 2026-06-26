@@ -1,6 +1,22 @@
 "use client";
 
-import { createContext, type JSX, useMemo, useState } from "react";
+import { createContext, type JSX, useCallback, useMemo, useSyncExternalStore } from "react";
+
+type Listener = () => void;
+
+const tokenListeners: Listener[] = [];
+
+const subscribeToToken = (listener: Listener): (() => void) => {
+  tokenListeners.push(listener);
+  return () => {
+    const index = tokenListeners.indexOf(listener);
+    if (index > -1) tokenListeners.splice(index, 1);
+  };
+};
+
+const getTokenSnapshot = (): string | null => localStorage.getItem("access_token");
+
+const getTokenServerSnapshot = (): null => null;
 
 export interface AuthContextValue {
   token: string | null;
@@ -15,10 +31,21 @@ export const AuthContext = createContext<AuthContextValue>({
 });
 
 const AuthProvider = ({ children }: { children: React.ReactNode }): JSX.Element => {
-  const [token, setToken] = useState<string | null>(() =>
-    typeof window !== "undefined" ? localStorage.getItem("access_token") : null,
+  const token = useSyncExternalStore(subscribeToToken, getTokenSnapshot, getTokenServerSnapshot);
+
+  const setToken = useCallback((newToken: string | null): void => {
+    if (newToken === null) {
+      localStorage.removeItem("access_token");
+    } else {
+      localStorage.setItem("access_token", newToken);
+    }
+    tokenListeners.forEach((listener) => listener());
+  }, []);
+
+  const value = useMemo(
+    () => ({ token, isAuthenticated: token !== null, setToken }),
+    [token, setToken],
   );
-  const value = useMemo(() => ({ token, isAuthenticated: token !== null, setToken }), [token]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

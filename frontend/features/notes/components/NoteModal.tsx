@@ -10,19 +10,25 @@ import { Button } from "@/components/ui/button";
 import CategoryDropdown from "@/components/ui/CategoryDropdown";
 import useCategories from "@/features/categories/hooks/useCategories";
 import useCreateNote from "@/features/notes/hooks/useCreateNote";
+import useUpdateNote from "@/features/notes/hooks/useUpdateNote";
 import {
   createNoteSchema,
   type CreateNoteFormValues,
 } from "@/features/notes/schemas/createNote.schema";
+import type { Note } from "@/features/notes/types";
 import { hexToRgba } from "@/lib/utils";
 
 interface NoteModalProps {
   onClose: () => void;
+  note?: Note;
+  defaultCategoryId?: string;
 }
 
-const NoteModal = ({ onClose }: NoteModalProps): JSX.Element => {
+const NoteModal = ({ onClose, note, defaultCategoryId }: NoteModalProps): JSX.Element => {
   const { data: categories = [] } = useCategories();
-  const { mutate, isPending } = useCreateNote();
+  const { mutate: createMutate, isPending: createPending } = useCreateNote();
+  const { mutate: updateMutate, isPending: updatePending } = useUpdateNote();
+  const isPending = note ? updatePending : createPending;
 
   const {
     register,
@@ -32,23 +38,30 @@ const NoteModal = ({ onClose }: NoteModalProps): JSX.Element => {
     formState: { errors },
   } = useForm<CreateNoteFormValues>({
     resolver: zodResolver(createNoteSchema),
-    defaultValues: { title: "", content: "", category_id: "" },
+    defaultValues: {
+      title: note?.title ?? "",
+      content: note?.content ?? "",
+      category_id: note?.category.id ?? defaultCategoryId ?? "",
+    },
   });
 
   const categoryId = useWatch({ control, name: "category_id" });
   const selectedCategory = categories.find((cat) => cat.id === categoryId) ?? null;
 
+  const handleError = (error: unknown): void => {
+    if (isAxiosError(error) && error.response?.data) {
+      const data = error.response.data as Record<string, string[]>;
+      if (data.title) setError("title", { message: data.title[0] });
+      if (data.category_id) setError("category_id", { message: data.category_id[0] });
+    }
+  };
+
   const onSubmit = (values: CreateNoteFormValues): void => {
-    mutate(values, {
-      onSuccess: onClose,
-      onError: (error) => {
-        if (isAxiosError(error) && error.response?.data) {
-          const data = error.response.data as Record<string, string[]>;
-          if (data.title) setError("title", { message: data.title[0] });
-          if (data.category_id) setError("category_id", { message: data.category_id[0] });
-        }
-      },
-    });
+    if (note) {
+      updateMutate({ id: note.id, ...values }, { onSuccess: onClose, onError: handleError });
+    } else {
+      createMutate(values, { onSuccess: onClose, onError: handleError });
+    }
   };
 
   return (
@@ -95,7 +108,11 @@ const NoteModal = ({ onClose }: NoteModalProps): JSX.Element => {
         }}
       >
         {/* Last edited */}
-        <p className="text-xs text-black/50 text-right">Last edited: Today</p>
+        <p className="text-xs text-black/50 text-right">
+          {note
+            ? `Last Edited: ${new Date(note.updated_at).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })} at ${new Date(note.updated_at).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true }).toLowerCase()}`
+            : "Last Edited: Today"}
+        </p>
 
         {/* Title */}
         <input

@@ -14,3 +14,9 @@ export interface CreateNotePayload {
   content: string;
   category_id: string;
 }
+
+export interface UpdateNotePayload {
+  title: string;
+  content: string;
+  category_id: string;
+}

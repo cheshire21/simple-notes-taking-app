@@ -10,10 +10,10 @@ import NoteCard from "@/components/ui/NoteCard";
 import type { Category, Note } from "@/types";
 
 const categories: Category[] = [
-  { id: "1", name: "Random Thoughts", color: "#E8855A" },
-  { id: "2", name: "Personal", color: "#7FB5AA" },
-  { id: "3", name: "School", color: "#F5D98B" },
-  { id: "4", name: "Drama", color: "#B5BF8F" },
+  { id: "1", name: "Random Thoughts", color: "#E8855A", created_at: "2026-06-24T10:00:00Z" },
+  { id: "2", name: "Personal", color: "#7FB5AA", created_at: "2026-06-24T10:00:00Z" },
+  { id: "3", name: "School", color: "#F5D98B", created_at: "2026-06-24T10:00:00Z" },
+  { id: "4", name: "Drama", color: "#B5BF8F", created_at: "2026-06-24T10:00:00Z" },
 ];
 
 const sampleNote: Note = {

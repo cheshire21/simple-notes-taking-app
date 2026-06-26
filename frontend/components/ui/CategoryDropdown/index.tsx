@@ -4,6 +4,8 @@ import React, { useEffect, useRef, useState } from "react";
 
 import type { Category } from "@/types";
 
+import ChevronDown from "./ChevronDown";
+
 interface CategoryDropdownProps {
   categories: Category[];
   selectedCategory: Category | null;
@@ -47,26 +49,28 @@ const CategoryDropdown = ({
     <div ref={wrapperRef} className={`relative inline-block ${className}`}>
       <button
         type="button"
-        className="border border-brown/30 rounded-full px-3 py-1.5 flex items-center gap-2 font-linter text-sm text-brown cursor-pointer"
+        className="border border-brown/40 rounded-xl px-4 py-3 flex items-center justify-between gap-3 font-linter text-sm text-brown cursor-pointer w-[225px]"
         onClick={handleTriggerClick}
       >
-        {selectedCategory && (
-          <span
-            className="w-3 h-3 rounded-full flex-shrink-0"
-            style={{ backgroundColor: selectedCategory.color }}
-          />
-        )}
-        <span>{selectedCategory ? selectedCategory.name : "Category"}</span>
-        <span>▾</span>
+        <div className="flex items-center gap-2">
+          {selectedCategory && (
+            <span
+              className="w-3 h-3 rounded-full flex-shrink-0"
+              style={{ backgroundColor: selectedCategory.color }}
+            />
+          )}
+          <span>{selectedCategory ? selectedCategory.name : "Category"}</span>
+        </div>
+        <ChevronDown />
       </button>
 
       {isOpen && (
-        <div className="absolute top-full mt-1 left-0 z-10 bg-cream rounded-xl shadow-sm border border-brown/10 min-w-full py-1">
+        <div className="absolute top-full mt-1 left-0 z-10 bg-cream rounded-xl shadow-md w-[225px] py-2">
           {categories.map((category) => (
             <button
               key={category.id}
               type="button"
-              className="px-3 py-2 hover:bg-brown/5 cursor-pointer flex items-center gap-2 font-linter text-sm text-brown w-full text-left"
+              className="px-4 py-2.5 hover:bg-brown/5 cursor-pointer flex items-center gap-2 font-linter text-sm text-brown w-full text-left whitespace-nowrap"
               onClick={() => handleOptionClick(category)}
             >
               <span

@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import NoteCard from "@/components/ui/NoteCard";
 import NoteModal from "@/features/notes/components/NoteModal";
 import useNotes from "@/features/notes/hooks/useNotes";
+import type { Note } from "@/features/notes/types";
 
 interface NotesAreaProps {
   activeCategory?: string | null;
@@ -16,6 +17,7 @@ interface NotesAreaProps {
 const NotesArea = ({ activeCategory }: NotesAreaProps): JSX.Element => {
   const { data: notes = [], isLoading, isError } = useNotes(activeCategory);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingNote, setEditingNote] = useState<Note | null>(null);
 
   const renderContent = (): JSX.Element => {
     if (isLoading) {
@@ -41,7 +43,7 @@ const NotesArea = ({ activeCategory }: NotesAreaProps): JSX.Element => {
                 key={note.id}
                 note={note}
                 categoryColor={note.category.color}
-                onClick={() => {}}
+                onClick={() => setEditingNote(note)}
               />
             ))}
           </div>
@@ -70,7 +72,8 @@ const NotesArea = ({ activeCategory }: NotesAreaProps): JSX.Element => {
         </Button>
       </div>
       {renderContent()}
-      {isModalOpen && <NoteModal onClose={() => setIsModalOpen(false)} />}
+      {isModalOpen && <NoteModal onClose={() => setIsModalOpen(false)} defaultCategoryId={activeCategory ?? undefined} />}
+      {editingNote && <NoteModal note={editingNote} onClose={() => setEditingNote(null)} />}
     </div>
   );
 };
