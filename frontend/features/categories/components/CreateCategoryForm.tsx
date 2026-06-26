@@ -6,6 +6,7 @@ import { Check, X } from "lucide-react";
 import type { JSX } from "react";
 import { useForm } from "react-hook-form";
 
+import { Button } from "@/components/ui/button";
 import { useCreateCategory } from "@/features/categories/hooks/useCreateCategory";
 import {
   createCategorySchema,
@@ -48,9 +49,9 @@ const CreateCategoryForm = ({ onSuccess, onCancel }: CreateCategoryFormProps): J
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-1 mt-1">
       <div className="flex items-center gap-1.5">
-        <div className="relative shrink-0 w-3.5 h-3.5">
+        <div className="relative shrink-0 w-2.5 h-2.5">
           <span
-            className="block w-3.5 h-3.5 rounded-full"
+            className="block w-2.5 h-2.5 rounded-full"
             style={{ backgroundColor: selectedColor }}
           />
           <input
@@ -67,25 +68,30 @@ const CreateCategoryForm = ({ onSuccess, onCancel }: CreateCategoryFormProps): J
           placeholder="Category name"
           disabled={isPending}
           onKeyDown={(event) => event.key === "Escape" && onCancel()}
-          className="flex-1 text-sm text-brown bg-transparent border-b border-brown/40 outline-none px-0.5 py-0.5 placeholder:text-brown/40 min-w-0"
+          className="flex-1 text-xs text-black bg-transparent border-b border-brown/40 outline-none px-0.5 py-0.5 placeholder:text-black min-w-0"
         />
         <input type="hidden" {...register("color")} />
-        <button
-          type="button"
-          onClick={onCancel}
-          aria-label="Cancel"
-          className="shrink-0 w-5 h-5 flex items-center justify-center rounded-full text-brown/50 hover:text-brown transition-colors"
-        >
-          <X size={12} strokeWidth={2.5} />
-        </button>
-        <button
+
+        <Button
           type="submit"
+          size="icon-xs"
           disabled={isPending}
           aria-label="Add category"
-          className="shrink-0 w-5 h-5 flex items-center justify-center rounded-full bg-brown text-cream hover:opacity-80 disabled:opacity-40 transition-opacity"
+          className="rounded-full bg-brown text-cream hover:opacity-80 border-0"
         >
-          <Check size={11} strokeWidth={3} />
-        </button>
+          <Check size={8} strokeWidth={3} />
+        </Button>
+
+        <Button
+          type="button"
+          size="icon-xs"
+          variant="ghost"
+          onClick={onCancel}
+          aria-label="Cancel"
+          className="rounded-full text-brown/50 hover:text-brown hover:bg-transparent "
+        >
+          <X size={8} strokeWidth={2.5} />
+        </Button>
       </div>
       {errors.name && <p className="text-xs text-red-500 pl-7">{errors.name.message}</p>}
     </form>

@@ -17,7 +17,10 @@ import { registerSchema, type RegisterFormValues } from "@/features/auth/schemas
 
 const RegisterForm = (): JSX.Element => {
   const router = useRouter();
-  const form = useForm<RegisterFormValues>({ resolver: zodResolver(registerSchema) });
+  const form = useForm<RegisterFormValues>({
+    resolver: zodResolver(registerSchema),
+    defaultValues: { email: "", password: "" },
+  });
   const { mutate, isPending } = useRegister();
 
   const onSubmit = (values: RegisterFormValues): void => {

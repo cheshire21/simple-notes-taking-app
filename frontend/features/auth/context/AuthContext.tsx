@@ -1,29 +1,24 @@
 "use client";
 
-import { createContext, type JSX, useMemo, useSyncExternalStore } from "react";
+import { createContext, type JSX, useMemo, useState } from "react";
 
 export interface AuthContextValue {
   token: string | null;
   isAuthenticated: boolean;
+  setToken: (token: string | null) => void;
 }
 
 export const AuthContext = createContext<AuthContextValue>({
   token: null,
   isAuthenticated: false,
+  setToken: () => undefined,
 });
 
-const subscribe = (callback: () => void) => {
-  window.addEventListener("storage", callback);
-  return () => window.removeEventListener("storage", callback);
-};
-
-const getSnapshot = () => localStorage.getItem("access_token");
-
-const getServerSnapshot = () => null;
-
 const AuthProvider = ({ children }: { children: React.ReactNode }): JSX.Element => {
-  const token = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
-  const value = useMemo(() => ({ token, isAuthenticated: token !== null }), [token]);
+  const [token, setToken] = useState<string | null>(() =>
+    typeof window !== "undefined" ? localStorage.getItem("access_token") : null,
+  );
+  const value = useMemo(() => ({ token, isAuthenticated: token !== null, setToken }), [token]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

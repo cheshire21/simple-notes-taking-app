@@ -135,7 +135,7 @@ describe("LoginForm", () => {
     await waitFor(() => expect(screen.getByRole("button", { name: /logging in/i })).toBeDisabled());
   });
 
-  it("redirects to /dashboard on success", async () => {
+  it("redirects to / on success", async () => {
     const user = userEvent.setup();
 
     server.use(

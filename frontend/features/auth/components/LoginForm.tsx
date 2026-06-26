@@ -12,17 +12,27 @@ import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import PasswordInput from "@/components/ui/PasswordInput";
+import { useAuth } from "@/features/auth/hooks/useAuth";
 import { useLogin } from "@/features/auth/hooks/useLogin";
 import { loginSchema, type LoginFormValues } from "@/features/auth/schemas/login.schema";
 
 const LoginForm = (): JSX.Element => {
   const router = useRouter();
-  const form = useForm<LoginFormValues>({ resolver: zodResolver(loginSchema) });
+  const { setToken } = useAuth();
+  const form = useForm<LoginFormValues>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: { email: "", password: "" },
+  });
   const { mutate, isPending } = useLogin();
 
   const onSubmit = (values: LoginFormValues): void => {
     mutate(values, {
-      onSuccess: () => router.push("/"),
+      onSuccess: (data) => {
+        localStorage.setItem("access_token", data.access);
+        localStorage.setItem("refresh_token", data.refresh);
+        setToken(data.access);
+        router.push("/");
+      },
       onError: (error) => {
         if (isAxiosError(error) && error.response?.data) {
           const data = error.response.data as Record<string, string | string[]>;
