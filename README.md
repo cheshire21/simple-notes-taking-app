@@ -95,7 +95,13 @@ docker-compose up --build
 docker-compose exec notes-backend python manage.py migrate
 ```
 
-**5. (Optional) Create an admin user**
+**5. Run seed data (optional)**
+
+```bash
+docker-compose exec notes-backend python manage.py seed
+```
+
+**6. (Optional) Create an admin user**
 
 ```bash
 docker-compose exec notes-backend python manage.py createsuperuser
@@ -136,6 +142,7 @@ npm run dev
 ```bash
 docker-compose exec notes-backend python manage.py makemigrations
 docker-compose exec notes-backend python manage.py migrate
+docker-compose exec notes-backend python manage.py seed
 docker-compose exec notes-backend python manage.py createsuperuser
 docker-compose exec notes-backend python manage.py test
 ```
