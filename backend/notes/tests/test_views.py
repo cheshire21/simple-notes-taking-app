@@ -1,0 +1,49 @@
+from faker import Faker
+from rest_framework.test import APITestCase
+
+from categories.tests.factories import CategoryFactory
+from users.tests.factories import UserFactory
+
+fake = Faker()
+
+
+class TestNoteListCreateViewPost(APITestCase):
+    def setUp(self):
+        self.user = UserFactory()
+        self.category = CategoryFactory(user=self.user)
+        self.url = "/api/notes/"
+
+    def test_unauthenticated_returns_401(self):
+        response = self.client.post(self.url, {"title": fake.sentence(), "category_id": str(self.category.id)})
+        self.assertEqual(response.status_code, 401)
+
+    def test_creates_note_returns_201(self):
+        self.client.force_authenticate(user=self.user)
+        title = fake.sentence(nb_words=4)
+        content = fake.paragraph()
+        response = self.client.post(
+            self.url,
+            {"title": title, "content": content, "category_id": str(self.category.id)},
+        )
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.data["title"], title)
+        self.assertEqual(response.data["category"]["id"], str(self.category.id))
+
+    def test_missing_title_returns_400(self):
+        self.client.force_authenticate(user=self.user)
+        response = self.client.post(self.url, {"category_id": str(self.category.id)})
+        self.assertEqual(response.status_code, 400)
+
+    def test_missing_category_id_returns_400(self):
+        self.client.force_authenticate(user=self.user)
+        response = self.client.post(self.url, {"title": fake.sentence()})
+        self.assertEqual(response.status_code, 400)
+
+    def test_another_users_category_returns_400(self):
+        self.client.force_authenticate(user=self.user)
+        other_category = CategoryFactory()
+        response = self.client.post(
+            self.url,
+            {"title": fake.sentence(), "category_id": str(other_category.id)},
+        )
+        self.assertEqual(response.status_code, 400)
