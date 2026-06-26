@@ -3,10 +3,10 @@
 import { useState } from "react";
 import type { JSX } from "react";
 
+import CategoryDropdown from "@/components/CategoryDropdown";
+import Modal from "@/components/Modal";
+import NoteCard from "@/components/NoteCard";
 import { Button } from "@/components/ui/button";
-import CategoryDropdown from "@/components/ui/CategoryDropdown";
-import Modal from "@/components/ui/Modal";
-import NoteCard from "@/components/ui/NoteCard";
 import type { Category, Note } from "@/types";
 
 const categories: Category[] = [

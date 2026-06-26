@@ -2,7 +2,7 @@
 
 import { type InputHTMLAttributes, type JSX, useState } from "react";
 
-import { Input } from "../input";
+import { Input } from "@/components/ui/input";
 
 import EyeClosedIcon from "./EyeClosedIcon";
 import EyeOpenIcon from "./EyeOpenIcon";

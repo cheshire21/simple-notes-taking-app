@@ -8,10 +8,10 @@ import { useRouter } from "next/navigation";
 import type { JSX } from "react";
 import { useForm } from "react-hook-form";
 
+import PasswordInput from "@/components/PasswordInput";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import PasswordInput from "@/components/ui/PasswordInput";
 import { useRegister } from "@/features/auth/hooks/useRegister";
 import { registerSchema, type RegisterFormValues } from "@/features/auth/schemas/register.schema";
 

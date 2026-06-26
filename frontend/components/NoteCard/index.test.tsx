@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
-import NoteCard from "@/components/ui/NoteCard";
+import NoteCard from "@/components/NoteCard";
 import type { Note } from "@/features/notes/types";
 
 const makeNote = (updatedAt: string): Note => ({

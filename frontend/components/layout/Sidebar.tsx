@@ -6,6 +6,8 @@ import type { JSX } from "react";
 
 import LogoutButton from "@/features/auth/components/LogoutButton";
 import CategoryItem from "@/features/categories/components/CategoryItem";
+import CategoryItemError from "@/features/categories/components/CategoryItem/CategoryItemError";
+import CategoryItemSkeleton from "@/features/categories/components/CategoryItem/CategoryItemSkeleton";
 import CreateCategoryForm from "@/features/categories/components/CreateCategoryForm";
 import useCategories from "@/features/categories/hooks/useCategories";
 
@@ -17,7 +19,7 @@ interface SidebarProps {
 
 const Sidebar = ({ activeCategory, setActiveCategory, noteCounts }: SidebarProps): JSX.Element => {
   const [isAdding, setIsAdding] = useState(false);
-  const { data: categories = [], isLoading, isError } = useCategories();
+  const { data: categories = [], isLoading, isError, refetch } = useCategories();
 
   return (
     <aside className="hidden md:flex w-64 flex-col pt-8 px-6">
@@ -28,8 +30,21 @@ const Sidebar = ({ activeCategory, setActiveCategory, noteCounts }: SidebarProps
       >
         All Categories
       </button>
-      {isLoading && <p className="text-xs text-brown/40">Loading…</p>}
-      {isError && <p className="text-xs text-red-400">Failed to load categories.</p>}
+      {isLoading && (
+        <div className="flex flex-col gap-2">
+          {Array.from({ length: 4 }).map((_, idx) => (
+            // eslint-disable-next-line react/no-array-index-key
+            <CategoryItemSkeleton key={idx} />
+          ))}
+        </div>
+      )}
+      {isError && (
+        <CategoryItemError
+          onRetry={() => {
+            refetch().catch(() => undefined);
+          }}
+        />
+      )}
       {!isLoading && !isError && (
         <ul className="flex flex-col gap-2">
           {categories.map((cat) => (

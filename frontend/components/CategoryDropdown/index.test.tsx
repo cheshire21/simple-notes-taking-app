@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
-import CategoryDropdown from "@/components/ui/CategoryDropdown";
+import CategoryDropdown from "@/components/CategoryDropdown";
 import type { Category } from "@/types";
 
 const categories: Category[] = [

@@ -5,8 +5,10 @@ import Image from "next/image";
 import type { JSX } from "react";
 import { useState } from "react";
 
+import NoteCard from "@/components/NoteCard";
+import NoteCardError from "@/components/NoteCard/NoteCardError";
+import NoteCardSkeleton from "@/components/NoteCard/NoteCardSkeleton";
 import { Button } from "@/components/ui/button";
-import NoteCard from "@/components/ui/NoteCard";
 import NoteModal from "@/features/notes/components/NoteModal";
 import useNotes from "@/features/notes/hooks/useNotes";
 import type { Note } from "@/features/notes/types";
@@ -16,23 +18,30 @@ interface NotesAreaProps {
 }
 
 const NotesArea = ({ activeCategory }: NotesAreaProps): JSX.Element => {
-  const { data: notes = [], isLoading, isError } = useNotes(activeCategory);
+  const { data: notes = [], isLoading, isError, refetch } = useNotes(activeCategory);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingNote, setEditingNote] = useState<Note | null>(null);
 
   const renderContent = (): JSX.Element => {
     if (isLoading) {
       return (
-        <div className="flex flex-1 items-center justify-center">
-          <p className="text-xs text-brown/40">Loading…</p>
+        <div className="flex-1 overflow-y-auto px-6 pb-6">
+          <div className="grid grid-cols-3 gap-4">
+            {Array.from({ length: 6 }).map((_, idx) => (
+              // eslint-disable-next-line react/no-array-index-key
+              <NoteCardSkeleton key={idx} />
+            ))}
+          </div>
         </div>
       );
     }
     if (isError) {
       return (
-        <div className="flex flex-1 items-center justify-center">
-          <p className="text-xs text-red-400">Failed to load notes.</p>
-        </div>
+        <NoteCardError
+          onRetry={() => {
+            refetch().catch(() => undefined);
+          }}
+        />
       );
     }
     if (notes.length > 0) {

@@ -24,8 +24,9 @@ frontend/
 │       └── notes/
 │           └── page.tsx
 ├── components/                 # shared reusable UI
-│   ├── ui/                     # shadcn components: button, input, form, dialog, label + PasswordInput
-│   └── layout/                 # Navbar, Sidebar, PageWrapper...
+│   ├── ui/                     # shadcn/ui components + base primitives: button, input, form, dialog, label, Skeleton
+│   ├── layout/                 # structural components: Sidebar, NotesArea
+│   └── <ComponentName>/        # custom global components: NoteCard, CategoryDropdown, Modal, PasswordInput
 ├── features/                   # feature logic
 │   ├── auth/
 │   │   ├── components/         # AuthGuard (route protection wrapper)
@@ -131,17 +132,33 @@ export const deleteNote = (id: number) =>
 ---
 
 ### `components/` — Shared UI
-- Only generic, reusable components with no feature-specific logic
-- `ui/` — **shadcn/ui** components: `button`, `input`, `form`, `dialog`, `label` + custom `PasswordInput`
-- `layout/` — structural components (Navbar, Sidebar, PageWrapper)
+
+Three sub-layers with a strict placement rule:
+
+| Sub-layer | What goes here | Examples |
+|---|---|---|
+| `ui/` | shadcn/ui components + base primitives | `button`, `input`, `form`, `dialog`, `label`, `Skeleton` |
+| `layout/` | Structural shell components — compose the page frame | `Sidebar`, `NotesArea` |
+| `<ComponentName>/` | Custom global components — app-specific, used across features | `NoteCard/`, `CategoryDropdown/`, `Modal`, `PasswordInput/` |
+
+**Rule:** `components/ui/` is for shadcn/ui components and base primitives (Skeleton, etc.). Any custom component with app-specific logic or markup belongs directly under `components/` as its own folder or file.
+
+Custom components that are folder-based follow this pattern:
+```
+components/NoteCard/
+├── index.tsx          # default export: the component
+├── index.test.tsx
+├── NoteCardSkeleton.tsx   # named sibling: skeleton variant
+└── NoteCardError.tsx      # named sibling: error variant
+```
 
 **Before writing any Tailwind classes or UI elements, always read these two files first — in this order:**
 1. `app/globals.css` — color tokens (`cream`, `brown`, `salmon`, `yellow-soft`, `teal-soft`, `olive-soft`), font families (`font-linter`, `font-inria-serif`), typography utility classes (`.page-heading`, `.body-text`, `.note-title`, etc.), and shadcn CSS variable mappings (`--background`, `--foreground`, `--primary`, `--border`, etc.)
-2. `components/ui/` — all available shadcn components. Never build a new primitive if one already exists here.
+2. `components/ui/` — all available primitives. Never build a new primitive if one already exists here.
 
 **Hard rules:**
 - Never use hardcoded hex colors — always use named design tokens (`text-brown`) or shadcn semantic tokens (`text-foreground`, `border-input`)
-- Never build a new component if one already exists in `components/ui/`
+- Never put a custom component in `components/ui/` — shadcn components and base primitives only
 - Never define typography styles inline if a utility class already exists in `globals.css`
 
 ```tsx
