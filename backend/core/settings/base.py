@@ -22,6 +22,7 @@ INSTALLED_APPS = [
     "django_filters",
     "drf_spectacular",
     "users",
+    "categories",
 ]
 
 AUTH_USER_MODEL = "users.User"
