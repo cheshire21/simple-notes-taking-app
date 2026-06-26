@@ -137,3 +137,33 @@ class TestNoteDetailViewPatch(APITestCase):
         self.client.force_authenticate(user=self.user)
         response = self.client.patch(self.url, {"category_id": str(other_category.id)}, format="json")
         self.assertEqual(response.status_code, 400)
+
+
+class TestNoteDetailViewDelete(APITestCase):
+    def setUp(self):
+        self.user = UserFactory()
+        self.category = CategoryFactory(user=self.user)
+        self.note = NoteFactory(category=self.category)
+        self.url = f"/api/notes/{self.note.id}/"
+
+    def test_unauthenticated_returns_401(self):
+        response = self.client.delete(self.url)
+        self.assertEqual(response.status_code, 401)
+
+    def test_returns_204_on_success(self):
+        self.client.force_authenticate(user=self.user)
+        response = self.client.delete(self.url)
+        self.assertEqual(response.status_code, 204)
+
+    def test_returns_404_for_other_users_note(self):
+        other_note = NoteFactory()
+        self.client.force_authenticate(user=self.user)
+        response = self.client.delete(f"/api/notes/{other_note.id}/")
+        self.assertEqual(response.status_code, 404)
+
+    def test_returns_404_for_nonexistent_note(self):
+        import uuid
+
+        self.client.force_authenticate(user=self.user)
+        response = self.client.delete(f"/api/notes/{uuid.uuid4()}/")
+        self.assertEqual(response.status_code, 404)

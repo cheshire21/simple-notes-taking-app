@@ -55,3 +55,7 @@ def note_update(
     note.full_clean()
     note.save(update_fields=update_fields)
     return note
+
+
+def note_delete(*, note: Note) -> None:
+    note.delete()

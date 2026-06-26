@@ -5,7 +5,7 @@ from django.test import TestCase
 from faker import Faker
 
 from categories.tests.factories import CategoryFactory
-from notes.services import note_create, note_update
+from notes.services import note_create, note_delete, note_update
 from notes.tests.factories import NoteFactory
 from users.tests.factories import UserFactory
 
@@ -64,3 +64,17 @@ class TestNoteUpdate(TestCase):
         other_category = CategoryFactory()
         with self.assertRaises(ValidationError):
             note_update(note=self.note, category_id=other_category.id)
+
+
+class TestNoteDelete(TestCase):
+    def setUp(self):
+        self.user = UserFactory()
+        self.category = CategoryFactory(user=self.user)
+        self.note = NoteFactory(category=self.category)
+
+    def test_deletes_note_from_db(self):
+        from notes.models import Note
+
+        note_id = self.note.id
+        note_delete(note=self.note)
+        self.assertFalse(Note.objects.filter(id=note_id).exists())

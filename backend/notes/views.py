@@ -10,7 +10,7 @@ from rest_framework.views import APIView
 
 from notes.selectors import note_get, note_list
 from notes.serializers import NoteInputSerializer, NoteOutputSerializer, NoteUpdateInputSerializer
-from notes.services import note_create, note_update
+from notes.services import note_create, note_delete, note_update
 
 
 class NoteListCreateView(APIView):
@@ -51,3 +51,9 @@ class NoteDetailView(APIView):
         except DjangoValidationError as exc:
             raise DRFValidationError(exc.message_dict) from exc
         return Response(NoteOutputSerializer(note).data)
+
+    @extend_schema(responses={204: None})
+    def delete(self, request, pk):
+        note = note_get(id=pk, user=request.user)
+        note_delete(note=note)
+        return Response(status=status.HTTP_204_NO_CONTENT)
