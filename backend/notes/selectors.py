@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import TYPE_CHECKING
 
 from django.contrib.auth import get_user_model
@@ -13,14 +15,14 @@ if TYPE_CHECKING:
 User = get_user_model()
 
 
-def note_list(*, user: "AbstractUser", category_id: str | None = None) -> QuerySet[Note]:
+def note_list(*, user: AbstractUser, category_id: str | None = None) -> QuerySet[Note]:
     notes = Note.objects.filter(category__user=user).select_related("category")
     if category_id:
         notes = notes.filter(category_id=category_id)
     return notes
 
 
-def note_get(*, id: str, user: "AbstractUser") -> Note:
+def note_get(*, id: str, user: AbstractUser) -> Note:
     note = get_object_or_404(Note.objects.select_related("category"), id=id)
     if note.category.user != user:
         raise Http404

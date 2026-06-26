@@ -5,7 +5,8 @@ from django.test import TestCase
 from faker import Faker
 
 from categories.tests.factories import CategoryFactory
-from notes.services import note_create
+from notes.services import note_create, note_update
+from notes.tests.factories import NoteFactory
 from users.tests.factories import UserFactory
 
 fake = Faker()
@@ -36,3 +37,30 @@ class TestNoteCreate(TestCase):
     def test_raises_on_nonexistent_category_id(self):
         with self.assertRaises(ValidationError):
             note_create(user=self.user, title=fake.sentence(), category_id=uuid.uuid4())
+
+
+class TestNoteUpdate(TestCase):
+    def setUp(self):
+        self.user = UserFactory()
+        self.category = CategoryFactory(user=self.user)
+        self.note = NoteFactory(category=self.category)
+
+    def test_updates_title(self):
+        updated = note_update(note=self.note, title="New Title")
+        self.assertEqual(updated.title, "New Title")
+        self.note.refresh_from_db()
+        self.assertEqual(self.note.title, "New Title")
+
+    def test_updates_content(self):
+        updated = note_update(note=self.note, content="New content")
+        self.assertEqual(updated.content, "New content")
+
+    def test_updates_category(self):
+        new_category = CategoryFactory(user=self.user)
+        updated = note_update(note=self.note, category_id=new_category.id)
+        self.assertEqual(updated.category, new_category)
+
+    def test_raises_400_for_other_users_category(self):
+        other_category = CategoryFactory()
+        with self.assertRaises(ValidationError):
+            note_update(note=self.note, category_id=other_category.id)

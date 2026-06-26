@@ -20,6 +20,12 @@ class NoteInputSerializer(serializers.Serializer):
     category_id = serializers.UUIDField()
 
 
+class NoteUpdateInputSerializer(serializers.Serializer):
+    title = serializers.CharField(max_length=255, required=False)
+    content = serializers.CharField(allow_blank=True, required=False)
+    category_id = serializers.UUIDField(required=False)
+
+
 class NoteOutputSerializer(serializers.ModelSerializer):
     id = serializers.UUIDField(read_only=True)
     category = NoteCategorySerializer(read_only=True)

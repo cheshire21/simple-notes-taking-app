@@ -107,3 +107,33 @@ class TestNoteDetailViewGet(APITestCase):
         self.client.force_authenticate(user=self.user)
         response = self.client.get(f"/api/notes/{other_note.id}/")
         self.assertEqual(response.status_code, 404)
+
+
+class TestNoteDetailViewPatch(APITestCase):
+    def setUp(self):
+        self.user = UserFactory()
+        self.category = CategoryFactory(user=self.user)
+        self.note = NoteFactory(category=self.category)
+        self.url = f"/api/notes/{self.note.id}/"
+
+    def test_unauthenticated_returns_401(self):
+        response = self.client.patch(self.url, {"title": "New Title"}, format="json")
+        self.assertEqual(response.status_code, 401)
+
+    def test_updates_note_returns_200(self):
+        self.client.force_authenticate(user=self.user)
+        response = self.client.patch(self.url, {"title": "Updated Title"}, format="json")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["title"], "Updated Title")
+
+    def test_returns_404_for_other_users_note(self):
+        other_note = NoteFactory()
+        self.client.force_authenticate(user=self.user)
+        response = self.client.patch(f"/api/notes/{other_note.id}/", {"title": "X"}, format="json")
+        self.assertEqual(response.status_code, 404)
+
+    def test_returns_400_for_invalid_category(self):
+        other_category = CategoryFactory()
+        self.client.force_authenticate(user=self.user)
+        response = self.client.patch(self.url, {"category_id": str(other_category.id)}, format="json")
+        self.assertEqual(response.status_code, 400)
