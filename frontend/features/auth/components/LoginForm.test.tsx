@@ -135,7 +135,7 @@ describe("LoginForm", () => {
     await waitFor(() => expect(screen.getByRole("button", { name: /logging in/i })).toBeDisabled());
   });
 
-  it("redirects to /dashboard/notes on success", async () => {
+  it("redirects to /dashboard on success", async () => {
     const user = userEvent.setup();
 
     server.use(
@@ -150,6 +150,6 @@ describe("LoginForm", () => {
     await user.type(screen.getByPlaceholderText("Password"), "password123");
     await user.click(screen.getByRole("button", { name: /login/i }));
 
-    await waitFor(() => expect(mockPush).toHaveBeenCalledWith("/dashboard/notes"));
+    await waitFor(() => expect(mockPush).toHaveBeenCalledWith("/"));
   });
 });

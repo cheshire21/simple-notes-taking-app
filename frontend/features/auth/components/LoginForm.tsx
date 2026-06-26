@@ -22,7 +22,7 @@ const LoginForm = (): JSX.Element => {
 
   const onSubmit = (values: LoginFormValues): void => {
     mutate(values, {
-      onSuccess: () => router.push("/dashboard/notes"),
+      onSuccess: () => router.push("/"),
       onError: (error) => {
         if (isAxiosError(error) && error.response?.data) {
           const data = error.response.data as Record<string, string | string[]>;

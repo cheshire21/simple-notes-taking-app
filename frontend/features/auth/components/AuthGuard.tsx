@@ -18,7 +18,7 @@ const AuthGuard = ({ children, requireAuth }: AuthGuardProps): JSX.Element | nul
     if (requireAuth && token === null) {
       router.replace("/login");
     } else if (!requireAuth && token !== null) {
-      router.replace("/dashboard/notes");
+      router.replace("/");
     }
   }, [token, requireAuth, router]);
 
