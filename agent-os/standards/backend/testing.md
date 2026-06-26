@@ -96,6 +96,30 @@ class NoteFactory(factory.django.DjangoModelFactory):
     content = factory.Faker("paragraph")
 ```
 
+## Password in factories
+
+Always use `PostGenerationMethodCall("set_password", ...)` — never assign a plain string to `password`.
+
+`set_password()` runs PBKDF2 hashing. A plain string is stored unhashed and `authenticate()` silently fails in any test that checks login.
+
+## Faker in test methods
+
+`factory.Faker()` is lazy — it only works as a factory field declaration. For one-off values inside test methods, use `fake = Faker()` at module level:
+
+```python
+from faker import Faker
+fake = Faker()  # module-level
+
+class UserRegisterViewTests(APITestCase):
+    def test_valid_registration(self):
+        response = self.client.post(self.url, {
+            "email": fake.email(),
+            "password": fake.password(length=10),
+        })
+```
+
+**Exception:** hardcode values that must be intentionally invalid (e.g. `"not-an-email"` for format validation tests).
+
 ## Rules
 
 - `setUp` for mutable objects (recreated before each test)
